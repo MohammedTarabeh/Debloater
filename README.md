@@ -34,6 +34,7 @@ If Windows Defender is running, the script will add some default exclusions auto
 🙌 Credits
 
 Developer: ! Star 
+
 GitHub Username: 5t42
 
 <img width="512" height="512" alt="debloater" src="https://github.com/user-attachments/assets/e291d29c-3402-4445-a0c7-faeb0a10ed05" />
