@@ -29,7 +29,7 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Write-Host "Windows Defender is not running." -ForegroundColor Red
 }
 
-$url = 'https://github.com/MohammedTarabeh/DeBloater/raw/refs/heads/main/Debloater.exe'
+$url = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/Debloater.exe'
 $outputFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
 if (Test-Path $outputFile) { Remove-Item $outputFile -Force }
 Invoke-WebRequest -Uri $url -OutFile $outputFile -UseBasicParsing
