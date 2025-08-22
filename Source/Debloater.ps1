@@ -79,6 +79,8 @@ if (Test-Path $output3) {
     $proc.WaitForExit()
     Remove-Item $output3 -Force -ErrorAction SilentlyContinue
 }
+
+
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
     if ($choice -eq '3') {
