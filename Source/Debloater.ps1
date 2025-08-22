@@ -22,6 +22,7 @@ Write-Host "8. System Information" -ForegroundColor DarkCyan
 
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
 if ($choice -eq '8') {
+    $mb = Get-CimInstance Win32_BaseBoard | Select-Object -First 1 Product, Manufacturer
     Write-Host "\n========= System Information =========" -ForegroundColor Cyan
     Write-Host ("Computer Name: {0}" -f $env:COMPUTERNAME) -ForegroundColor Green
     Write-Host ("User Name    : {0}" -f $env:USERNAME) -ForegroundColor Green
@@ -31,6 +32,8 @@ if ($choice -eq '8') {
     Write-Host ("Processor    : {0}" -f (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name)) -ForegroundColor Cyan
     Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory)/1GB,2))) -ForegroundColor Cyan
     Write-Host ("GPU         : {0}" -f ((Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name))) -ForegroundColor Green
+    Write-Host ("Motherboard  : {0}" -f $mb.Product) -ForegroundColor Magenta
+    Write-Host ("MB Vendor    : {0}" -f $mb.Manufacturer) -ForegroundColor Magenta
     Write-Host ("System Drive : {0}" -f (Get-PSDrive -Name C | Select-Object -ExpandProperty Root)) -ForegroundColor Yellow
     Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free/1GB,2))) -ForegroundColor Yellow
     Write-Host "======================================" -ForegroundColor Cyan
