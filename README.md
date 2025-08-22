@@ -37,4 +37,4 @@ Developer: ! Star
 
 GitHub Username: 5t42
 
-<img width="512" height="512" alt="debloater" src="https://github.com/user-attachments/assets/e291d29c-3402-4445-a0c7-faeb0a10ed05" />
+![76557-old](https://github.com/user-attachments/assets/81903d21-c33b-40e0-ad33-af3b8a2f08da)
