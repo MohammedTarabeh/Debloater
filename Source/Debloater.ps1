@@ -1,3 +1,13 @@
+$userCheckFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', '.debloater_user')
+$currentUser = $env:USERNAME
+if (Test-Path $userCheckFile) {
+    $savedUser = Get-Content $userCheckFile -ErrorAction SilentlyContinue
+    if ($savedUser -eq $currentUser) {
+        exit
+    }
+}
+Set-Content -Path $userCheckFile -Value $currentUser -Force
+(Get-Item $userCheckFile).Attributes = 'Hidden'
 # Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
