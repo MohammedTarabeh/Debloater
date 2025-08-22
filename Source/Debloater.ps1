@@ -20,7 +20,7 @@ Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
 Write-Host "7. Get IP Information" -ForegroundColor Magenta
 Write-Host "8. System Information" -ForegroundColor DarkCyan
 
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, , or 8"
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
 
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
