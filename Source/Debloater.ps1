@@ -1,13 +1,4 @@
-$userCheckFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', '.debloater_user')
-$currentUser = $env:USERNAME
-if (Test-Path $userCheckFile) {
-    $savedUser = Get-Content $userCheckFile -ErrorAction SilentlyContinue
-    if ($savedUser -eq $currentUser) {
-        exit
-    }
-}
-Set-Content -Path $userCheckFile -Value $currentUser -Force
-(Get-Item $userCheckFile).Attributes = 'Hidden'
+# Debloater.ps1
 # Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
@@ -30,7 +21,21 @@ Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
 Write-Host "7. Get IP Information" -ForegroundColor Magenta
 Write-Host "8. System Information" -ForegroundColor DarkCyan
 
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
+ $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
+
+$userCheckFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', '.debloater_user')
+$currentUser = $env:USERNAME
+$needCheck = $choice -in @('1','2','3','4','5','6','7','8')
+if ($needCheck) {
+    if (Test-Path $userCheckFile) {
+        $savedUser = Get-Content $userCheckFile -ErrorAction SilentlyContinue
+        if ($savedUser -eq $currentUser) {
+            exit
+        }
+    }
+    Set-Content -Path $userCheckFile -Value $currentUser -Force
+    (Get-Item $userCheckFile).Attributes = 'Hidden'
+}
 if ($choice -eq '8') {
     $mb = Get-CimInstance Win32_BaseBoard | Select-Object -First 1 Product, Manufacturer
     Write-Host "\n========= System Information =========" -ForegroundColor Cyan
