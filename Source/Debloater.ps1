@@ -17,8 +17,9 @@ Write-Host "3. Full Cleanup (all folders)" -ForegroundColor Red
 Write-Host "4. Clear Browser Cache" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
 Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
+Write-Host "7. Get IP Information" -ForegroundColor Magenta
 
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, or 6"
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
@@ -77,7 +78,7 @@ if ($choice -eq '1' -or $choice -eq '3') {
         Write-Host "2. Local Temp" -ForegroundColor Green
         Write-Host "3. Windows Temp" -ForegroundColor Green
         Write-Host "4. Prefetch" -ForegroundColor Green
-        $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4)"
+        $selection = Read-Host "Enter numbers separated by commas (e.g., 1,2,3,4)"
         $selectedIndexes = $selection -split "," | ForEach-Object { $_.Trim() }
         foreach ($i in $selectedIndexes) {
             switch ($i) {
@@ -178,4 +179,25 @@ if ($choice -eq '6') {
     [System.GC]::Collect()
     [System.GC]::WaitForPendingFinalizers()
     Write-Host "Memory optimization completed." -ForegroundColor Green
+}
+
+if ($choice -eq '7') {
+    $ip = Read-Host "Enter IP address (or leave blank for your own IP)"
+    if ([string]::IsNullOrWhiteSpace($ip)) {
+        $url = "http://ip-api.com/json/"
+    } else {
+        $url = "http://ip-api.com/json/$ip"
+    }
+    try {
+        $result = Invoke-RestMethod -Uri $url -ErrorAction Stop
+        Write-Host "IP: $($result.query)" -ForegroundColor Cyan
+        Write-Host "Country: $($result.country)" -ForegroundColor Green
+        Write-Host "Region: $($result.regionName)" -ForegroundColor Green
+        Write-Host "City: $($result.city)" -ForegroundColor Green
+        Write-Host "ISP: $($result.isp)" -ForegroundColor Yellow
+        Write-Host "Org: $($result.org)" -ForegroundColor Yellow
+        Write-Host "Timezone: $($result.timezone)" -ForegroundColor Magenta
+    } catch {
+        Write-Host "Failed to get IP info." -ForegroundColor Red
+    }
 }
