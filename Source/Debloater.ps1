@@ -18,8 +18,23 @@ Write-Host "4. Clear Browser Cache" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
 Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
 Write-Host "7. Get IP Information" -ForegroundColor Magenta
+Write-Host "8. System Information" -ForegroundColor DarkCyan
 
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
+if ($choice -eq '8') {
+    Write-Host "\n========= System Information =========" -ForegroundColor Cyan
+    Write-Host ("Computer Name: {0}" -f $env:COMPUTERNAME) -ForegroundColor Green
+    Write-Host ("User Name    : {0}" -f $env:USERNAME) -ForegroundColor Green
+    Write-Host ("OS Version   : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption)) -ForegroundColor Yellow
+    Write-Host ("OS Build     : {0}" -f (Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber)) -ForegroundColor Yellow
+    Write-Host ("System Type  : {0}" -f (Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty SystemType)) -ForegroundColor Magenta
+    Write-Host ("Processor    : {0}" -f (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name)) -ForegroundColor Cyan
+    Write-Host ("RAM (GB)     : {0}" -f ([math]::Round((Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory)/1GB,2))) -ForegroundColor Cyan
+    Write-Host ("GPU         : {0}" -f ((Get-CimInstance Win32_VideoController | Select-Object -First 1 -ExpandProperty Name))) -ForegroundColor Green
+    Write-Host ("System Drive : {0}" -f (Get-PSDrive -Name C | Select-Object -ExpandProperty Root)) -ForegroundColor Yellow
+    Write-Host ("Free Space   : {0} GB" -f ([math]::Round((Get-PSDrive -Name C).Free/1GB,2))) -ForegroundColor Yellow
+    Write-Host "======================================" -ForegroundColor Cyan
+}
 
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
