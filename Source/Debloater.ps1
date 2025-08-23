@@ -41,7 +41,6 @@ Write-Host "7. IP Lookup ( Get Public IP Address Information )" -ForegroundColor
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 if ($choice -eq '7') {
-    Write-Host "Enter the IP address to lookup:" -ForegroundColor Cyan
     $ip = Read-Host "IP Address"
 
     if ($ip) {
@@ -186,7 +185,6 @@ if ($choice -eq '6') {
     Write-Host "Memory optimization completed." -ForegroundColor Green
 }
 
-# Updated URL for the script
 $scriptUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/Debloater.ps1"
 $localScriptPath = "$env:USERPROFILE\Downloads\Debloater.ps1"
 
