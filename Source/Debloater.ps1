@@ -1,3 +1,4 @@
+# By Star
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
