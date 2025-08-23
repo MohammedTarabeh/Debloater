@@ -51,14 +51,18 @@ if ($choice -eq '7') {
             $response = Invoke-WebRequest -Uri $apiUrl -UseBasicParsing -ErrorAction Stop
             $ipInfo = $response.Content | ConvertFrom-Json
 
-            Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
-            Write-Host "IP Address   : $($ipInfo.ip_address)" -ForegroundColor Yellow
-            Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
-            Write-Host "Region       : $($ipInfo.region)" -ForegroundColor Yellow
-            Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
-            Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
-            Write-Host "Fraud Score  : $($ipInfo.fraud_score)" -ForegroundColor Yellow
-            Write-Host "====================================" -ForegroundColor Cyan
+            if ($ipInfo.success -eq $true) {
+                Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
+                Write-Host "IP Address   : $($ipInfo.ip_address)" -ForegroundColor Yellow
+                Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
+                Write-Host "Region       : $($ipInfo.region)" -ForegroundColor Yellow
+                Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
+                Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
+                Write-Host "Fraud Score  : $($ipInfo.fraud_score)" -ForegroundColor Yellow
+                Write-Host "====================================" -ForegroundColor Cyan
+            } else {
+                Write-Host "Failed to fetch IP information. The API returned an error." -ForegroundColor Red
+            }
         } catch {
             Write-Host "Failed to fetch IP information. Please check the IP address or your internet connection." -ForegroundColor Red
         }
