@@ -36,38 +36,25 @@ Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -
 Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
 Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
-Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
+Write-Host "7. Get Public IP Address with Details" -ForegroundColor Yellow
 
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 if ($choice -eq '7') {
-    Write-Host "Enter the IP address to lookup:" -ForegroundColor Cyan
-    $ip = Read-Host "IP Address"
-
-    if ($ip) {
-        $apiUrl = "https://api.ipqs.com/?key=pybNtey4wx4c18AxraeTAAYRE4nQD62K&ip=$ip&format=json"
-
-        try {
-            $response = Invoke-WebRequest -Uri $apiUrl -UseBasicParsing -ErrorAction Stop
-            $ipInfo = $response.Content | ConvertFrom-Json
-
-            if ($ipInfo.success -eq $true) {
-                Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
-                Write-Host "IP Address   : $($ipInfo.ip_address)" -ForegroundColor Yellow
-                Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
-                Write-Host "Region       : $($ipInfo.region)" -ForegroundColor Yellow
-                Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
-                Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
-                Write-Host "Fraud Score  : $($ipInfo.fraud_score)" -ForegroundColor Yellow
-                Write-Host "====================================" -ForegroundColor Cyan
-            } else {
-                Write-Host "Failed to fetch IP information. The API returned an error." -ForegroundColor Red
-            }
-        } catch {
-            Write-Host "Failed to fetch IP information. Please check the IP address or your internet connection." -ForegroundColor Red
-        }
-    } else {
-        Write-Host "No IP address entered." -ForegroundColor Red
+    try {
+        $response = Invoke-RestMethod -Uri "https://ipinfo.io/json" -ErrorAction Stop
+        Write-Host "========= Public IP Information =========" -ForegroundColor Cyan
+        Write-Host "IP Address   : $($response.ip)" -ForegroundColor Yellow
+        Write-Host "Hostname     : $($response.hostname)" -ForegroundColor Yellow
+        Write-Host "City         : $($response.city)" -ForegroundColor Yellow
+        Write-Host "Region       : $($response.region)" -ForegroundColor Yellow
+        Write-Host "Country      : $($response.country)" -ForegroundColor Yellow
+        Write-Host "Location     : $($response.loc)" -ForegroundColor Yellow
+        Write-Host "Organization : $($response.org)" -ForegroundColor Yellow
+        Write-Host "Postal Code  : $($response.postal)" -ForegroundColor Yellow
+        Write-Host "=========================================" -ForegroundColor Cyan
+    } catch {
+        Write-Host "Failed to fetch the public IP details. Please check your internet connection." -ForegroundColor Red
     }
 }
 
