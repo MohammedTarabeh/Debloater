@@ -31,7 +31,7 @@ if (Test-Path $output1) {
 
 # Process user choices after the tool execution
 Write-Host "Choose an option:" -ForegroundColor Cyan
-Write-Host "1. 1Clear Temporary Files Opt" -ForegroundColor Green
+Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
 Write-Host "2. Doing Nothing" -ForegroundColor Yellow
 Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
 Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
