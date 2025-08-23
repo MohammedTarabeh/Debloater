@@ -3,7 +3,7 @@ $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host "         Debloater Tool v1.0          " -ForegroundColor Green
-Write-Host "          By   ! Star                 " -ForegroundColor Yellow
+Write-Host "          By   ! Star - 5t42          " -ForegroundColor Yellow
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Description: This tool cleans temporary files, optimizes your system, and clears browser cache." -ForegroundColor Magenta
