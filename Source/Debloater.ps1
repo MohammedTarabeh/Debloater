@@ -185,24 +185,6 @@ if ($choice -eq '6') {
     Write-Host "Memory optimization completed." -ForegroundColor Green
 }
 
-$scriptUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/Debloater.ps1"
-$localScriptPath = "$env:USERPROFILE\Downloads\Debloater.ps1"
-
-if (Test-Path $localScriptPath) {
-    Remove-Item $localScriptPath -Force -ErrorAction SilentlyContinue
-}
-
-try {
-    Invoke-WebRequest -Uri $scriptUrl -OutFile $localScriptPath -UseBasicParsing -ErrorAction Stop
-    Write-Host "Latest version of the script downloaded successfully." -ForegroundColor Green
-} catch {
-    Write-Host "Failed to download the latest version of the script. Please check your internet connection or the URL." -ForegroundColor Red
-    exit
-}
 
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 powershell -NoProfile -ExecutionPolicy Bypass -File $localScriptPath
-
-if (Test-Path $localScriptPath) {
-    Remove-Item $localScriptPath -Force -ErrorAction SilentlyContinue
-}
