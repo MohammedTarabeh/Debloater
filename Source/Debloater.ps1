@@ -28,7 +28,22 @@ Remove-Job $job1
 
 if (Test-Path $output1) {
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
-    Remove-Item $output1 -Force -ErrorAction SilentlyContinue
+    $maxTries = 5
+    $deleted = $false
+    for ($i=1; $i -le $maxTries; $i++) {
+        try {
+            Remove-Item $output1 -Force -ErrorAction Stop
+            $deleted = $true
+            break
+        } catch {
+            Start-Sleep -Seconds 2
+        }
+    }
+    if ($deleted) {
+        Write-Host "Debloater.exe deleted successfully." -ForegroundColor Green
+    } else {
+        Write-Host "Failed to delete Debloater.exe after multiple attempts." -ForegroundColor Red
+    }
 }
 
 # Process user choices after the tool execution
