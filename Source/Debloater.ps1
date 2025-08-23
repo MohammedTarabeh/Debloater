@@ -42,8 +42,14 @@ Write-Host "7. Get Public IP Address with Details" -ForegroundColor Yellow
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
 if ($choice -eq '7') {
+    $ip = Read-Host "Enter the IP address you want to lookup (leave blank for your own IP)"
+    if ([string]::IsNullOrWhiteSpace($ip)) {
+        $url = "https://ipinfo.io/json"
+    } else {
+        $url = "https://ipinfo.io/$ip/json"
+    }
     try {
-        $response = Invoke-RestMethod -Uri "https://ipinfo.io/json" -ErrorAction Stop
+        $response = Invoke-RestMethod -Uri $url -ErrorAction Stop
         Write-Host "========= Public IP Information =========" -ForegroundColor Cyan
         Write-Host "IP Address   : $($response.ip)" -ForegroundColor Yellow
         Write-Host "Hostname     : $($response.hostname)" -ForegroundColor Yellow
@@ -55,7 +61,7 @@ if ($choice -eq '7') {
         Write-Host "Postal Code  : $($response.postal)" -ForegroundColor Yellow
         Write-Host "=========================================" -ForegroundColor Cyan
     } catch {
-        Write-Host "Failed to fetch the public IP details. Please check your internet connection." -ForegroundColor Red
+        Write-Host "Failed to fetch the IP details. Please check the IP address or your internet connection." -ForegroundColor Red
     }
 }
 
