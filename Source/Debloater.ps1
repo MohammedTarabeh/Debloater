@@ -1,4 +1,4 @@
-# By ! Star - 5t42
+# By Star
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
@@ -38,8 +38,9 @@ Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Bl
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
 Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
 Write-Host "7. Get Public IP Address with Details" -ForegroundColor Yellow
+Write-Host "8. Startup Manager (Enable/Disable Startup Programs)" -ForegroundColor Blue
 
-$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
+$choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, 7, or 8"
 
 if ($choice -eq '7') {
     $ip = Read-Host "Enter the IP address you want to lookup (leave blank for your own IP)"
@@ -182,4 +183,54 @@ if ($choice -eq '6') {
     [System.GC]::Collect()
     [System.GC]::WaitForPendingFinalizers()
     Write-Host "Memory optimization completed." -ForegroundColor Green
+}
+
+if ($choice -eq '8') {
+    Write-Host "\nStartup Manager:" -ForegroundColor Cyan
+    $startupItems = Get-CimInstance -ClassName Win32_StartupCommand | Select-Object Name, Command, Location, User
+    $i = 1
+    foreach ($item in $startupItems) {
+        Write-Host ("[{0}] {1} | {2}" -f $i, $item.Name, $item.Command) -ForegroundColor Yellow
+        $i++
+    }
+    if ($startupItems.Count -eq 0) {
+        Write-Host "No startup items found." -ForegroundColor Red
+        return
+    }
+    $selected = Read-Host "Enter the number of the program to manage (or leave blank to exit)"
+    if ($selected -and ($selected -as [int]) -gt 0 -and ($selected -as [int]) -le $startupItems.Count) {
+        $selectedItem = $startupItems[($selected -as [int]) - 1]
+        Write-Host "Selected: $($selectedItem.Name)" -ForegroundColor Green
+        Write-Host "1. Disable (remove from startup)" -ForegroundColor Red
+        Write-Host "2. Enable (add to startup)" -ForegroundColor Green
+        $action = Read-Host "Choose action (1 or 2)"
+        if ($action -eq '1') {
+            try {
+                # Remove from registry Run keys
+                $regPaths = @(
+                    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
+                    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run',
+                    'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run'
+                )
+                foreach ($reg in $regPaths) {
+                    Remove-ItemProperty -Path $reg -Name $selectedItem.Name -ErrorAction SilentlyContinue
+                }
+                Write-Host "Startup item disabled (removed from registry)." -ForegroundColor Green
+            } catch {
+                Write-Host "Failed to disable startup item." -ForegroundColor Red
+            }
+        } elseif ($action -eq '2') {
+            try {
+                $regPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+                Set-ItemProperty -Path $regPath -Name $selectedItem.Name -Value $selectedItem.Command
+                Write-Host "Startup item enabled (added to current user startup)." -ForegroundColor Green
+            } catch {
+                Write-Host "Failed to enable startup item." -ForegroundColor Red
+            }
+        } else {
+            Write-Host "Invalid action." -ForegroundColor Red
+        }
+    } else {
+        Write-Host "No valid selection made. Exiting Startup Manager." -ForegroundColor Red
+    }
 }
