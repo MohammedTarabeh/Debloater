@@ -187,17 +187,25 @@ if ($choice -eq '7') {
 
     if ($ip) {
         $apiUrl = "http://ip-api.com/json/$ip"
+        $outputFile = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'IP_Lookup_Result.txt')
+
         try {
             $response = Invoke-WebRequest -Uri $apiUrl -UseBasicParsing -ErrorAction Stop
             $ipInfo = $response.Content | ConvertFrom-Json
 
-            Write-Host "========= IP Lookup Result =========" -ForegroundColor Cyan
-            Write-Host "IP Address   : $($ipInfo.query)" -ForegroundColor Yellow
-            Write-Host "Country      : $($ipInfo.country)" -ForegroundColor Yellow
-            Write-Host "Region       : $($ipInfo.regionName)" -ForegroundColor Yellow
-            Write-Host "City         : $($ipInfo.city)" -ForegroundColor Yellow
-            Write-Host "ISP          : $($ipInfo.isp)" -ForegroundColor Yellow
-            Write-Host "====================================" -ForegroundColor Cyan
+            $result = @(
+                "========= IP Lookup Result =========",
+                "IP Address   : $($ipInfo.query)",
+                "Country      : $($ipInfo.country)",
+                "Region       : $($ipInfo.regionName)",
+                "City         : $($ipInfo.city)",
+                "ISP          : $($ipInfo.isp)",
+                "===================================="
+            )
+
+            $result | Out-File -FilePath $outputFile -Encoding UTF8
+            Start-Process -FilePath $outputFile -Wait
+            Remove-Item -Path $outputFile -Force -ErrorAction SilentlyContinue
         } catch {
             Write-Host "Failed to fetch IP information. Please check the IP address or your internet connection." -ForegroundColor Red
         }
@@ -206,6 +214,7 @@ if ($choice -eq '7') {
     }
 }
 
+# Updated URL for the script
 $scriptUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/Debloater.ps1"
 $localScriptPath = "$env:USERPROFILE\Downloads\Debloater.ps1"
 
