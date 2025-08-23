@@ -79,12 +79,13 @@ do {
     switch ($choice) {
         '1' {
             Write-Host ""
-            Write-Host "Select folders to clear:" -ForegroundColor Cyan
+            Write-Host "Select folders to clear (or enter 0 to return to main menu):" -ForegroundColor Cyan
             Write-Host "1. TEMP folder" -ForegroundColor Green
             Write-Host "2. Local Temp" -ForegroundColor Green
             Write-Host "3. Windows Temp" -ForegroundColor Green
             Write-Host "4. Prefetch" -ForegroundColor Green
-            $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4)"
+            $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4) or 0 to return"
+            if ($selection -eq '0') { continue }
             $selectedIndexes = $selection -split "," | ForEach-Object { $_.Trim() }
             $folders = @()
             foreach ($i in $selectedIndexes) {
@@ -140,25 +141,27 @@ do {
             break
         }
         '3' {
+            Write-Host "You can enter 0 at any time to return to the main menu." -ForegroundColor Yellow
             $folders = @(
                 $env:TEMP, 
                 "$env:USERPROFILE\AppData\Local\Temp", 
                 "C:\Windows\Temp", 
                 "C:\Windows\Prefetch"
             )
-            Write-Host "Starting full cleanup in 3 seconds..." -ForegroundColor Magenta
-            Start-Sleep -Seconds 3
-            $startTime = Get-Date
-            $spaceBefore = (Get-PSDrive C).Free
-            Write-Host "Free space before cleanup: $([math]::Round($spaceBefore/1MB,2)) MB" -ForegroundColor Cyan
-            $totalDeleted = 0
+            $cancel = $false
             foreach ($path in $folders) {
+                if ($cancel) { break }
                 if (Test-Path $path) {
                     $items = Get-ChildItem -Path $path -Recurse -Force -ErrorAction SilentlyContinue
                     $count = $items.Count
                     $progress = 0
                     foreach ($item in $items) {
                         if (Test-Path $item.FullName) {
+                            # Check for cancel
+                            if ($Host.UI.RawUI.KeyAvailable) {
+                                $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+                                if ($key.Character -eq '0') { $cancel = $true; break }
+                            }
                             try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
                             $progress++
                             $totalDeleted++
@@ -166,6 +169,10 @@ do {
                         }
                     }
                 }
+            }
+            if ($cancel) {
+                Write-Host "Operation cancelled. Returning to main menu." -ForegroundColor Yellow
+                continue
             }
             $spaceAfter = (Get-PSDrive C).Free
             $endTime = Get-Date
@@ -183,11 +190,12 @@ do {
         }
         '4' {
             Write-Host ""
-            Write-Host "Select browser to clear cache:" -ForegroundColor Cyan
+            Write-Host "Select browser to clear cache (or enter 0 to return to main menu):" -ForegroundColor Cyan
             Write-Host "1. Chrome" -ForegroundColor Green
             Write-Host "2. Edge" -ForegroundColor Green
             Write-Host "3. Firefox" -ForegroundColor Green
-            $browserChoice = Read-Host "Enter 1, 2, or 3"
+            $browserChoice = Read-Host "Enter 1, 2, 3 or 0 to return"
+            if ($browserChoice -eq '0') { continue }
             switch ($browserChoice) {
                 "1" {
                     $chromeCache = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"
@@ -225,6 +233,9 @@ do {
             Pause-For-User
         }
         '5' {
+            Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
+            $input = Read-Host "Press Enter to clear all recycle bins or 0 to return"
+            if ($input -eq '0') { continue }
             $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
             foreach ($drive in $drives) {
                 try {
@@ -235,6 +246,9 @@ do {
             Pause-For-User
         }
         '6' {
+            Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
+            $input = Read-Host "Press Enter to optimize memory or 0 to return"
+            if ($input -eq '0') { continue }
             Write-Host "Optimizing memory..." -ForegroundColor Cyan
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
@@ -242,7 +256,9 @@ do {
             Pause-For-User
         }
         '7' {
-            $ip = Read-Host "Enter the IP address you want to lookup (leave blank for your own IP)"
+            Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
+            $ip = Read-Host "Enter the IP address you want to lookup (leave blank for your own IP, or 0 to return)"
+            if ($ip -eq '0') { continue }
             if ([string]::IsNullOrWhiteSpace($ip)) {
                 $url = "https://ipinfo.io/json"
             } else {
@@ -266,7 +282,7 @@ do {
             Pause-For-User
         }
         '8' {
-            Write-Host "`nStartup Manager:" -ForegroundColor Cyan
+            Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
             $startupItems = Get-CimInstance -ClassName Win32_StartupCommand | Select-Object Name, Command, Location, User
             $i = 1
             foreach ($item in $startupItems) {
@@ -278,13 +294,15 @@ do {
                 Pause-For-User
                 break
             }
-            $selected = Read-Host "Enter the number of the program to manage (or leave blank to exit)"
+            $selected = Read-Host "Enter the number of the program to manage (or 0 to return, blank to exit)"
+            if ($selected -eq '0') { continue }
             if ($selected -and ($selected -as [int]) -gt 0 -and ($selected -as [int]) -le $startupItems.Count) {
                 $selectedItem = $startupItems[($selected -as [int]) - 1]
                 Write-Host "Selected: $($selectedItem.Name)" -ForegroundColor Green
                 Write-Host "1. Disable (remove from startup)" -ForegroundColor Red
                 Write-Host "2. Enable (add to startup)" -ForegroundColor Green
-                $action = Read-Host "Choose action (1 or 2)"
+                $action = Read-Host "Choose action (1 or 2, or 0 to return)"
+                if ($action -eq '0') { continue }
                 if ($action -eq '1') {
                     try {
                         $regPaths = @(
