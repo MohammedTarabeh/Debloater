@@ -30,13 +30,13 @@ if (Test-Path $output1) {
 
 # Process user choices after the tool execution
 Write-Host "Choose an option:" -ForegroundColor Cyan
-Write-Host "1. Clear Temporary Files Opt" -ForegroundColor Green
+Write-Host "1. Clear Temporary Files ( Options )" -ForegroundColor Green
 Write-Host "2. Doing Nothing" -ForegroundColor Yellow
-Write-Host "3. Full Cleanup Delete (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
-Write-Host "4. Clear Browser Cache (FireFox, Chrome, Edge,)" -ForegroundColor Blue
+Write-Host "3. Full Cleanup Delete ( Temp, Local Temp, Windows Temp, Prefetch )" -ForegroundColor Red
+Write-Host "4. Clear Browser Cache ( FireFox, Chrome, Edge, )" -ForegroundColor Blue
 Write-Host "5. Clear Recycle Bin" -ForegroundColor Magenta
-Write-Host "6. Memory Optimizer (Clear The Cached Memory)" -ForegroundColor Cyan
-Write-Host "7. IP Lookup (Get Public IP Address Information)" -ForegroundColor Yellow
+Write-Host "6. Memory Optimizer ( Clear The Cached Memory )" -ForegroundColor Cyan
+Write-Host "7. IP Lookup ( Get Public IP Address Information )" -ForegroundColor Yellow
 
 $choice = Read-Host "Enter 1, 2, 3, 4, 5, 6, or 7"
 
