@@ -1,8 +1,3 @@
-# IP Lookup Option (option 7, at the very end)
-
-# IP Lookup Option (option 7, at the end)
-
-# Debloater.ps1
 $ProgressPreference = 'SilentlyContinue'
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan
