@@ -78,11 +78,62 @@ do {
     $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, 8, or 9"
 
     switch ($choice) {
-        '1' {
-            Write-Host ""
-            Write-Host "Select folders to clear (or enter 0 to return to main menu):" -ForegroundColor Cyan
-            Write-Host "1. TEMP folder" -ForegroundColor Green
-            Write-Host "2. Local Temp" -ForegroundColor Green
+                $confirm = Read-Host "WARNING: This will attempt to forcefully and permanently remove $displayName and all its traces. This may break Windows or other apps. Type Y to continue."
+                if ($confirm -ne 'Y') {
+                    Write-Host "Aborted by user." -ForegroundColor Yellow
+                    return
+                }
+                # Remove for all users
+                $pkgs = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
+                if ($pkgs) {
+                    foreach ($pkg in $pkgs) {
+                        try {
+                            Remove-AppxPackage -Package $pkg.PackageFullName -AllUsers -ErrorAction SilentlyContinue
+                            $success = $true
+                        } catch {}
+                    }
+                }
+                # Remove for current user
+                $pkgCurrent = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
+                if ($pkgCurrent) {
+                    try {
+                        Remove-AppxPackage -Package $pkgCurrent.PackageFullName -ErrorAction SilentlyContinue
+                        $success = $true
+                    } catch {}
+                }
+                # Remove provisioned package
+                $prov = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $packageName }
+                if ($prov) {
+                    try {
+                        Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction SilentlyContinue
+                        $success = $true
+                    } catch {}
+                }
+                # Try to delete install folder
+                $allPkgs = @($pkgs) + @($pkgCurrent)
+                foreach ($pkg in $allPkgs) {
+                    if ($pkg -and $pkg.InstallLocation -and (Test-Path $pkg.InstallLocation)) {
+                        try {
+                            Remove-Item -Path $pkg.InstallLocation -Recurse -Force -ErrorAction SilentlyContinue
+                            Write-Host "Deleted install folder: $($pkg.InstallLocation)" -ForegroundColor DarkGray
+                        } catch {}
+                    }
+                }
+                # Try to remove registry keys (user and machine)
+                $regPaths = @(
+                    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore",
+                    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore"
+                )
+                foreach ($reg in $regPaths) {
+                    try {
+                        Get-ChildItem -Path $reg -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*$packageName*" } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+                    } catch {}
+                }
+                if ($success) {
+                    Write-Host "$displayName forcefully uninstalled and traces removed." -ForegroundColor Green
+                } else {
+                    Write-Host "Failed to uninstall $displayName. This app may be protected by Windows or require additional steps." -ForegroundColor Red
+                }
             Write-Host "3. Windows Temp" -ForegroundColor Green
             Write-Host "4. Prefetch" -ForegroundColor Green
             $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4) or 0 to return"
@@ -352,7 +403,7 @@ do {
                 @{num=14; name='Microsoft.GetHelp'; display='Get Help'},
                 @{num=15; name='Microsoft.Getstarted'; display='Get Started'}
             )
-            Write-Host "\nSelect an app to reinstall (enter the number or 0 to return):" -ForegroundColor Cyan
+            Write-Host "\nSelect an app to reinstall or Uninstall (enter the number or 0 to return):" -ForegroundColor Cyan
             foreach ($app in $apps) {
                 Write-Host ("{0}. {1}" -f $app.num, $app.display) -ForegroundColor Green
                 # Show details for each app
@@ -403,7 +454,6 @@ do {
                         } catch {}
                     }
                 }
-                # Try for current user if not successful
                 if (-not $success) {
                     $pkgCurrent = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
                     if ($pkgCurrent) {
@@ -413,7 +463,6 @@ do {
                         } catch {}
                     }
                 }
-                # Try to remove provisioned package (for new users)
                 if (-not $success) {
                     $prov = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $packageName }
                     if ($prov) {
