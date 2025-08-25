@@ -284,28 +284,28 @@ do {
                 Write-Host "Organization : $($response.org)" -ForegroundColor Yellow
                 Write-Host "Postal Code  : $($response.postal)" -ForegroundColor Yellow
                 Write-Host "=========================================" -ForegroundColor Cyan
-            } catch {
-                Write-Host "Failed to fetch the IP details. Please check the IP address or your internet connection." -ForegroundColor Red
-            }
-            Pause-For-User
-        }
-        '8' {
-            Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
-            $startupItems = Get-CimInstance -ClassName Win32_StartupCommand | Select-Object Name, Command, Location, User
-            $i = 1
-            foreach ($item in $startupItems) {
-                Write-Host ("[{0}] {1} | {2}" -f $i, $item.Name, $item.Command) -ForegroundColor Yellow
-                $i++
-            }
-            if ($startupItems.Count -eq 0) {
-                Write-Host "No startup items found." -ForegroundColor Red
+            '10' {
+                # Defender external tool block
+                Write-Host "Choose action:" -ForegroundColor Cyan
+                Write-Host "1. Disable Windows Defender"
+                Write-Host "2. Enable Windows Defender"
+                $defenderChoice = Read-Host "Enter action number"
+                $toolUrl = "https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/WDefender%20D%20&%20E.exe"
+                $toolPath = Join-Path $env:USERPROFILE "Downloads\WDefender D & E.exe"
+                Write-Host "Downloading Defender control tool..." -ForegroundColor Cyan
+                try {
+                    Invoke-WebRequest -Uri $toolUrl -OutFile $toolPath -UseBasicParsing -ErrorAction Stop
+                    Write-Host "Tool downloaded successfully." -ForegroundColor Green
+                    Write-Host "Launching tool..." -ForegroundColor Cyan
+                    Start-Process -FilePath $toolPath -Wait
+                    Write-Host "Tool closed. Deleting..." -ForegroundColor Yellow
+                    Remove-Item $toolPath -Force -ErrorAction SilentlyContinue
+                    Write-Host "Tool deleted from Downloads." -ForegroundColor Green
+                } catch {
+                    Write-Host "Error downloading or running the tool: $_" -ForegroundColor Red
+                }
                 Pause-For-User
-                break
             }
-            $selected = Read-Host "Enter the number of the program to manage (or 0 to return, blank to exit)"
-            if ($selected -eq '0') { continue }
-            if ($selected -and ($selected -as [int]) -gt 0 -and ($selected -as [int]) -le $startupItems.Count) {
-                $selectedItem = $startupItems[($selected -as [int]) - 1]
                 Write-Host "Selected: $($selectedItem.Name)" -ForegroundColor Green
                 Write-Host "1. Disable (remove from startup)" -ForegroundColor Red
                 Write-Host "2. Enable (add to startup)" -ForegroundColor Green
