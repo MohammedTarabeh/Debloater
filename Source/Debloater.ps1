@@ -354,9 +354,9 @@ do {
             )
             Write-Host "\nSelect an app to reinstall (enter the number or 0 to return):" -ForegroundColor Cyan
             foreach ($app in $apps) {
-                Write-Host ("{0}. {1}" -f $app.num, $app.display) -ForegroundColor Green
-                # Show details for each app
                 $pkg = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $app.name }
+                $status = if ($pkg) { '[Installed]' } else { '[Not Installed]' }
+                Write-Host ("{0}. {1} {2}" -f $app.num, $app.display, $status) -ForegroundColor Green
                 if ($pkg) {
                     $size = if ($pkg.InstallLocation -and (Test-Path $pkg.InstallLocation)) {
                         try {
