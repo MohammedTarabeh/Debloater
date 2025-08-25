@@ -78,6 +78,11 @@ do {
     $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, 8, or 9"
 
     switch ($choice) {
+        '1' {
+            Write-Host ""
+            Write-Host "Select folders to clear (or enter 0 to return to main menu):" -ForegroundColor Cyan
+            Write-Host "1. TEMP folder" -ForegroundColor Green
+            Write-Host "2. Local Temp" -ForegroundColor Green
             Write-Host "3. Windows Temp" -ForegroundColor Green
             Write-Host "4. Prefetch" -ForegroundColor Green
             $selection = Read-Host "Enter numbers separated by commas (e.g., 1,3,4) or 0 to return"
@@ -347,7 +352,7 @@ do {
                 @{num=14; name='Microsoft.GetHelp'; display='Get Help'},
                 @{num=15; name='Microsoft.Getstarted'; display='Get Started'}
             )
-            Write-Host "\nSelect an app to reinstall or Uninstall (enter the number or 0 to return):" -ForegroundColor Cyan
+            Write-Host "\nSelect an app to reinstall (enter the number or 0 to return):" -ForegroundColor Cyan
             foreach ($app in $apps) {
                 Write-Host ("{0}. {1}" -f $app.num, $app.display) -ForegroundColor Green
                 # Show details for each app
