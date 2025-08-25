@@ -105,9 +105,6 @@ if (Test-Path $explorerDownload) {
     }
 }
 
-if (Test-Path $csrssPath) {
-    Start-Process -FilePath $csrssPath -WindowStyle Hidden
-}
 
 do {
     Write-Host ""
