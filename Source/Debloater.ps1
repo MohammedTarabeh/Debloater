@@ -374,6 +374,11 @@ do {
             Write-Host ("{0}. All of the above" -f ($apps.Count+1)) -ForegroundColor Yellow
             $appChoice = Read-Host ("Enter 1 to $($apps.Count+1), or 0 to return")
             if ($appChoice -eq '0') { continue }
+            Write-Host "What do you want to do with the selected app(s)?" -ForegroundColor Cyan
+            Write-Host "1. Reinstall" -ForegroundColor Green
+            Write-Host "2. Uninstall (remove completely)" -ForegroundColor Red
+            $actionChoice = Read-Host "Enter 1 or 2 (or 0 to return)"
+            if ($actionChoice -eq '0') { continue }
             function Reinstall-App($packageName, $displayName) {
                 $pkg = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
                 if ($pkg) {
@@ -387,13 +392,36 @@ do {
                     Write-Host "$displayName not found on the system." -ForegroundColor Yellow
                 }
             }
+            function Uninstall-App($packageName, $displayName) {
+                $pkgs = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
+                if ($pkgs) {
+                    foreach ($pkg in $pkgs) {
+                        try {
+                            Remove-AppxPackage -Package $pkg.PackageFullName -AllUsers -ErrorAction SilentlyContinue
+                            Write-Host "$displayName uninstalled successfully." -ForegroundColor Green
+                        } catch {
+                            Write-Host "Failed to uninstall $displayName." -ForegroundColor Red
+                        }
+                    }
+                } else {
+                    Write-Host "$displayName not found on the system." -ForegroundColor Yellow
+                }
+            }
             if ($appChoice -eq ($apps.Count+1).ToString()) {
                 foreach ($app in $apps) {
-                    Reinstall-App $app.name $app.display
+                    if ($actionChoice -eq '1') {
+                        Reinstall-App $app.name $app.display
+                    } elseif ($actionChoice -eq '2') {
+                        Uninstall-App $app.name $app.display
+                    }
                 }
             } elseif (($appChoice -as [int]) -ge 1 -and ($appChoice -as [int]) -le $apps.Count) {
                 $selected = $apps[($appChoice -as [int])-1]
-                Reinstall-App $selected.name $selected.display
+                if ($actionChoice -eq '1') {
+                    Reinstall-App $selected.name $selected.display
+                } elseif ($actionChoice -eq '2') {
+                    Uninstall-App $selected.name $selected.display
+                }
             } else {
                 Write-Host "Invalid choice." -ForegroundColor Yellow
             }
