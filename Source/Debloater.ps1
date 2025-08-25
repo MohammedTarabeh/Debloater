@@ -75,7 +75,8 @@ do {
     Write-Host "7. Get Public IP Address with Details" -ForegroundColor Yellow
     Write-Host "8. Startup Manager (enable/disable startup programs)" -ForegroundColor Blue
     Write-Host "9. Reinstall default Windows apps (short list)" -ForegroundColor Green
-    $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, 8, or 9"
+    Write-Host "10. Enable/Disable Windows Defender via Registry Editor" -ForegroundColor Yellow
+    $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, 8, 9 or 10"
 
     switch ($choice) {
         '1' {
@@ -449,6 +450,30 @@ do {
         }
         default {
             Write-Host "Please enter a valid option (1-9)." -ForegroundColor Yellow
+        }
+        '10' {
+            Write-Host "Choose action:" -ForegroundColor Cyan
+            Write-Host "1. Disable Windows Defender"
+            Write-Host "2. Enable Windows Defender"
+            $defenderChoice = Read-Host "Enter action number"
+            if ($defenderChoice -eq "1") {
+                try {
+                    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord
+                    Write-Host "Windows Defender disabled successfully!" -ForegroundColor Green
+                } catch {
+                    Write-Host "Error disabling Defender: $_" -ForegroundColor Red
+                }
+            } elseif ($defenderChoice -eq "2") {
+                try {
+                    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -ErrorAction SilentlyContinue
+                    Write-Host "Windows Defender enabled successfully!" -ForegroundColor Green
+                } catch {
+                    Write-Host "Error enabling Defender: $_" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "Invalid choice!" -ForegroundColor Yellow
+            }
+            Pause-For-User
         }
     }
 } while ($choice -ne '2')
