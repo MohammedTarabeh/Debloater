@@ -191,6 +191,9 @@ do {
                 "C:\Windows\Temp", 
                 "C:\Windows\Prefetch"
             )
+            $startTime = Get-Date
+            $spaceBefore = (Get-PSDrive C).Free
+            $totalDeleted = 0
             $cancel = $false
             foreach ($path in $folders) {
                 if ($cancel) { break }
