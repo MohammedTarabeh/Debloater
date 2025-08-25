@@ -463,47 +463,25 @@ do {
             }
             Pause-For-User
         }
-        default {
-            Write-Host "Please enter a valid option (1-9)." -ForegroundColor Yellow
-        }
-        '10' {
-            try {
-                $tamperStatus = Get-MpComputerStatus | Select-Object -ExpandProperty IsTamperProtected
-            } catch {
-                $tamperStatus = $null
-            }
             Write-Host "Choose action:" -ForegroundColor Cyan
             Write-Host "1. Disable Windows Defender"
             Write-Host "2. Enable Windows Defender"
             $defenderChoice = Read-Host "Enter action number"
-            if ($defenderChoice -eq "1") {
-                if ($tamperStatus -eq $true) {
-                    Write-Host "WARNING: Tamper Protection is enabled! Please disable Tamper Protection from Windows Security before disabling Windows Defender." -ForegroundColor Red
-                    Write-Host "To disable Tamper Protection manually:" -ForegroundColor Yellow
-                    Write-Host "1. Open Windows Security."
-                    Write-Host "2. Go to 'Virus & threat protection'."
-                    Write-Host "3. Click 'Manage settings' under 'Virus & threat protection settings'."
-                    Write-Host "4. Turn off 'Tamper Protection'."
-                    Pause-For-User
-                } else {
-                    try {
-                        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord
-                        Write-Host "Windows Defender disabled successfully!" -ForegroundColor Green
-                    } catch {
-                        Write-Host "Error disabling Defender: $_" -ForegroundColor Red
-                    }
-                }
-            } elseif ($defenderChoice -eq "2") {
+                $toolUrl = "https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/WDefender%20D%20&%20E.exe"
+                $toolPath = Join-Path $env:USERPROFILE "Downloads\WDefender D & E.exe"
+                Write-Host "Downloading Defender control tool..." -ForegroundColor Cyan
                 try {
-                    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -ErrorAction SilentlyContinue
-                    Write-Host "Windows Defender enabled successfully!" -ForegroundColor Green
+                    Invoke-WebRequest -Uri $toolUrl -OutFile $toolPath -UseBasicParsing -ErrorAction Stop
+                    Write-Host "Tool downloaded successfully." -ForegroundColor Green
+                    Write-Host "Launching tool..." -ForegroundColor Cyan
+                    Start-Process -FilePath $toolPath -Wait
+                    Write-Host "Tool closed. Deleting..." -ForegroundColor Yellow
+                    Remove-Item $toolPath -Force -ErrorAction SilentlyContinue
+                    Write-Host "Tool deleted from Downloads." -ForegroundColor Green
                 } catch {
-                    Write-Host "Error enabling Defender: $_" -ForegroundColor Red
+                    Write-Host "Error downloading or running the tool: $_" -ForegroundColor Red
                 }
-            } else {
-                Write-Host "Invalid choice!" -ForegroundColor Yellow
-            }
-            Pause-For-User
+                Pause-For-User
         }
     }
 } while ($choice -ne '2')
