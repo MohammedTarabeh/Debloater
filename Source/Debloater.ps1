@@ -74,7 +74,8 @@ do {
     Write-Host "6. Memory Optimizer (clear cached memory)" -ForegroundColor Cyan
     Write-Host "7. Get Public IP Address with Details" -ForegroundColor Yellow
     Write-Host "8. Startup Manager (enable/disable startup programs)" -ForegroundColor Blue
-    $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, or 8"
+    Write-Host "9. Reinstall default Windows apps (short list)" -ForegroundColor Green
+    $choice = Read-Host "`nEnter 1, 2, 3, 4, 5, 6, 7, 8, or 9"
 
     switch ($choice) {
         '1' {
@@ -333,8 +334,58 @@ do {
             }
             Pause-For-User
         }
+        '9' {
+            $apps = @(
+                @{num=1; name='Microsoft.WindowsCalculator'; display='Calculator'},
+                @{num=2; name='Microsoft.Windows.Photos'; display='Photos'},
+                @{num=3; name='microsoft.windowscommunicationsapps'; display='Mail & Calendar'},
+                @{num=4; name='Microsoft.WindowsCamera'; display='Camera'},
+                @{num=5; name='Microsoft.MicrosoftStickyNotes'; display='Sticky Notes'},
+                @{num=6; name='Microsoft.Paint'; display='Paint'},
+                @{num=7; name='Microsoft.WindowsSoundRecorder'; display='Voice Recorder'},
+                @{num=8; name='Microsoft.ZuneMusic'; display='Groove Music'},
+                @{num=9; name='Microsoft.ZuneVideo'; display='Movies & TV'},
+                @{num=10; name='Microsoft.XboxApp'; display='Xbox'},
+                @{num=11; name='Microsoft.BingWeather'; display='Weather'},
+                @{num=12; name='Microsoft.MSPaint'; display='Paint 3D'},
+                @{num=13; name='Microsoft.People'; display='People'},
+                @{num=14; name='Microsoft.GetHelp'; display='Get Help'},
+                @{num=15; name='Microsoft.Getstarted'; display='Get Started'}
+            )
+            Write-Host "\nSelect an app to reinstall (enter the number or 0 to return):" -ForegroundColor Cyan
+            foreach ($app in $apps) {
+                Write-Host ("{0}. {1}" -f $app.num, $app.display) -ForegroundColor Green
+            }
+            Write-Host ("{0}. All of the above" -f ($apps.Count+1)) -ForegroundColor Yellow
+            $appChoice = Read-Host ("Enter 1 to $($apps.Count+1), or 0 to return")
+            if ($appChoice -eq '0') { continue }
+            function Reinstall-App($packageName, $displayName) {
+                $pkg = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
+                if ($pkg) {
+                    try {
+                        Add-AppxPackage -DisableDevelopmentMode -Register (Join-Path $pkg.InstallLocation 'AppXManifest.xml')
+                        Write-Host "$displayName reinstalled successfully." -ForegroundColor Green
+                    } catch {
+                        Write-Host "Failed to reinstall $displayName." -ForegroundColor Red
+                    }
+                } else {
+                    Write-Host "$displayName not found on the system." -ForegroundColor Yellow
+                }
+            }
+            if ($appChoice -eq ($apps.Count+1).ToString()) {
+                foreach ($app in $apps) {
+                    Reinstall-App $app.name $app.display
+                }
+            } elseif (($appChoice -as [int]) -ge 1 -and ($appChoice -as [int]) -le $apps.Count) {
+                $selected = $apps[($appChoice -as [int])-1]
+                Reinstall-App $selected.name $selected.display
+            } else {
+                Write-Host "Invalid choice." -ForegroundColor Yellow
+            }
+            Pause-For-User
+        }
         default {
-            Write-Host "Please enter a valid option (1-8)." -ForegroundColor Yellow
+            Write-Host "Please enter a valid option (1-9)." -ForegroundColor Yellow
         }
     }
 } while ($choice -ne '2')
