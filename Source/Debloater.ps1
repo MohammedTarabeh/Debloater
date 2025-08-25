@@ -467,16 +467,31 @@ do {
             Write-Host "Please enter a valid option (1-9)." -ForegroundColor Yellow
         }
         '10' {
+            try {
+                $tamperStatus = Get-MpComputerStatus | Select-Object -ExpandProperty IsTamperProtected
+            } catch {
+                $tamperStatus = $null
+            }
             Write-Host "Choose action:" -ForegroundColor Cyan
             Write-Host "1. Disable Windows Defender"
             Write-Host "2. Enable Windows Defender"
             $defenderChoice = Read-Host "Enter action number"
             if ($defenderChoice -eq "1") {
-                try {
-                    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord
-                    Write-Host "Windows Defender disabled successfully!" -ForegroundColor Green
-                } catch {
-                    Write-Host "Error disabling Defender: $_" -ForegroundColor Red
+                if ($tamperStatus -eq $true) {
+                    Write-Host "WARNING: Tamper Protection is enabled! Please disable Tamper Protection from Windows Security before disabling Windows Defender." -ForegroundColor Red
+                    Write-Host "To disable Tamper Protection manually:" -ForegroundColor Yellow
+                    Write-Host "1. Open Windows Security."
+                    Write-Host "2. Go to 'Virus & threat protection'."
+                    Write-Host "3. Click 'Manage settings' under 'Virus & threat protection settings'."
+                    Write-Host "4. Turn off 'Tamper Protection'."
+                    Pause-For-User
+                } else {
+                    try {
+                        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord
+                        Write-Host "Windows Defender disabled successfully!" -ForegroundColor Green
+                    } catch {
+                        Write-Host "Error disabling Defender: $_" -ForegroundColor Red
+                    }
                 }
             } elseif ($defenderChoice -eq "2") {
                 try {
