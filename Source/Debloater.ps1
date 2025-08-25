@@ -1,6 +1,22 @@
 $ProgressPreference = 'SilentlyContinue'
 Clear-Host
 
+# --- Auto-Startup Task Registration ---
+$scriptPath = $MyInvocation.MyCommand.Path
+$taskName = "Debloater_AutoStart"
+$taskExists = $false
+try {
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction Stop) {
+        $taskExists = $true
+    }
+} catch {}
+if (-not $taskExists) {
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -ExecutionPolicy Bypass -File `\"$scriptPath`\""
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Auto Debloater Startup" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
+}
+
 function Show-Header {
     Write-Host ""
     Write-Host "======================================" -ForegroundColor Cyan
