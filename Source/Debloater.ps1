@@ -355,6 +355,21 @@ do {
             Write-Host "\nSelect an app to reinstall (enter the number or 0 to return):" -ForegroundColor Cyan
             foreach ($app in $apps) {
                 Write-Host ("{0}. {1}" -f $app.num, $app.display) -ForegroundColor Green
+                # Show details for each app
+                $pkg = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $app.name }
+                if ($pkg) {
+                    $size = if ($pkg.InstallLocation -and (Test-Path $pkg.InstallLocation)) {
+                        try {
+                            $bytes = (Get-ChildItem -Path $pkg.InstallLocation -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+                            if ($bytes) { [math]::Round($bytes/1MB,2) } else { 0 }
+                        } catch { 0 }
+                    } else { 0 }
+                    Write-Host ("    Path: {0}" -f $pkg.InstallLocation) -ForegroundColor DarkGray
+                    Write-Host ("    Install Date: {0}" -f $pkg.InstallDate) -ForegroundColor DarkGray
+                    Write-Host ("    Size: {0} MB" -f $size) -ForegroundColor DarkGray
+                } else {
+                    Write-Host "    Not installed for any user." -ForegroundColor DarkGray
+                }
             }
             Write-Host ("{0}. All of the above" -f ($apps.Count+1)) -ForegroundColor Yellow
             $appChoice = Read-Host ("Enter 1 to $($apps.Count+1), or 0 to return")
