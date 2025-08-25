@@ -393,18 +393,40 @@ do {
                 }
             }
             function Uninstall-App($packageName, $displayName) {
+                $success = $false
                 $pkgs = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
                 if ($pkgs) {
                     foreach ($pkg in $pkgs) {
                         try {
                             Remove-AppxPackage -Package $pkg.PackageFullName -AllUsers -ErrorAction SilentlyContinue
-                            Write-Host "$displayName uninstalled successfully." -ForegroundColor Green
-                        } catch {
-                            Write-Host "Failed to uninstall $displayName." -ForegroundColor Red
-                        }
+                            $success = $true
+                        } catch {}
                     }
+                }
+                # Try for current user if not successful
+                if (-not $success) {
+                    $pkgCurrent = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
+                    if ($pkgCurrent) {
+                        try {
+                            Remove-AppxPackage -Package $pkgCurrent.PackageFullName -ErrorAction SilentlyContinue
+                            $success = $true
+                        } catch {}
+                    }
+                }
+                # Try to remove provisioned package (for new users)
+                if (-not $success) {
+                    $prov = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $packageName }
+                    if ($prov) {
+                        try {
+                            Remove-AppxProvisionedPackage -Online -PackageName $prov.PackageName -ErrorAction SilentlyContinue
+                            $success = $true
+                        } catch {}
+                    }
+                }
+                if ($success) {
+                    Write-Host "$displayName uninstalled successfully (advanced)." -ForegroundColor Green
                 } else {
-                    Write-Host "$displayName not found on the system." -ForegroundColor Yellow
+                    Write-Host "Failed to uninstall $displayName. This app may be protected by Windows or require additional steps." -ForegroundColor Red
                 }
             }
             if ($appChoice -eq ($apps.Count+1).ToString()) {
