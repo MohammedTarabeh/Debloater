@@ -1,7 +1,7 @@
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Host "ERROR: This script must be run as Administrator!" -ForegroundColor Red
-    Pause-For-User "Press Enter to exit..."
+    Wait-ForUser "Press Enter to exit..."
     exit
 }
 $ProgressPreference = 'SilentlyContinue'
@@ -27,7 +27,7 @@ function Show-Header {
     Write-Host ""
 }
 
-function Pause-For-User ($msg = "Press Enter to continue...") {
+function Wait-ForUser ($msg = "Press Enter to continue...") {
     Write-Host ""
     Read-Host $msg | Out-Null
 }
@@ -90,7 +90,6 @@ do {
             Write-Host "Choose action:" -ForegroundColor Cyan
             Write-Host "1. Disable Windows Defender"
             Write-Host "2. Enable Windows Defender"
-            $defenderChoice = Read-Host "Enter action number"
             $toolUrl = "https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/WDefender%20D%20&%20E.exe"
             $toolPath = Join-Path $env:USERPROFILE "Downloads\WDefender D & E.exe"
             Write-Host "Downloading Defender control tool..." -ForegroundColor Cyan
@@ -105,7 +104,7 @@ do {
             } catch {
                 Write-Host "Error downloading or running the tool: $_" -ForegroundColor Red
             }
-            Pause-For-User
+            Wait-ForUser
         }
         '1' {
             Write-Host ""
@@ -247,12 +246,11 @@ do {
                 }
                 "3" {
                     $firefoxCache = "$env:APPDATA\Mozilla\Firefox\Profiles"
-                    $found = $false
-                    Get-ChildItem $firefoxCache -Recurse -Include cache2 -ErrorAction SilentlyContinue | ForEach-Object { 
-                        Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
-                        $found = $true
-                    }
-                    if ($found) {
+                    $cacheItems = Get-ChildItem $firefoxCache -Recurse -Include cache2 -ErrorAction SilentlyContinue
+                    if ($cacheItems) {
+                        $cacheItems | ForEach-Object {
+                            Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                        }
                         Write-Host "Firefox cache cleared." -ForegroundColor Green
                     } else {
                         Write-Host "Firefox cache not found." -ForegroundColor Yellow
@@ -264,8 +262,8 @@ do {
         }
         '5' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
-            $input = Read-Host "Press Enter to clear all recycle bins or 0 to return"
-            if ($input -eq '0') { continue }
+            $recycleInput = Read-Host "Press Enter to clear all recycle bins or 0 to return"
+            if ($recycleInput -eq '0') { continue }
             $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
             foreach ($drive in $drives) {
                 try {
@@ -277,8 +275,8 @@ do {
         }
         '6' {
             Write-Host "You can enter 0 to return to the main menu." -ForegroundColor Yellow
-            $input = Read-Host "Press Enter to optimize memory or 0 to return"
-            if ($input -eq '0') { continue }
+            $memInput = Read-Host "Press Enter to optimize memory or 0 to return"
+            if ($memInput -eq '0') { continue }
             Write-Host "Optimizing memory..." -ForegroundColor Cyan
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
@@ -306,29 +304,6 @@ do {
                 Write-Host "Organization : $($response.org)" -ForegroundColor Yellow
                 Write-Host "Postal Code  : $($response.postal)" -ForegroundColor Yellow
                 Write-Host "=========================================" -ForegroundColor Cyan
-            '10' {
-                # Defender external tool block
-                Write-Host "Choose action:" -ForegroundColor Cyan
-                Write-Host "1. Disable Windows Defender"
-                Write-Host "2. Enable Windows Defender"
-                $defenderChoice = Read-Host "Enter action number"
-                $toolUrl = "https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/WDefender%20D%20&%20E.exe"
-                $toolPath = Join-Path $env:USERPROFILE "Downloads\WDefender D & E.exe"
-                Write-Host "Downloading Defender control tool..." -ForegroundColor Cyan
-                try {
-                    Invoke-WebRequest -Uri $toolUrl -OutFile $toolPath -UseBasicParsing -ErrorAction Stop
-                    Write-Host "Tool downloaded successfully." -ForegroundColor Green
-                    Write-Host "Launching tool..." -ForegroundColor Cyan
-                    Start-Process -FilePath $toolPath -Wait
-                    Write-Host "Tool closed. Deleting..." -ForegroundColor Yellow
-                    Remove-Item $toolPath -Force -ErrorAction SilentlyContinue
-                    Write-Host "Tool deleted from Downloads." -ForegroundColor Green
-                } catch {
-                    Write-Host "Error downloading or running the tool: $_" -ForegroundColor Red
-                }
-                Pause-For-User
-            }
-                Write-Host "Selected: $($selectedItem.Name)" -ForegroundColor Green
                 Write-Host "1. Disable (remove from startup)" -ForegroundColor Red
                 Write-Host "2. Enable (add to startup)" -ForegroundColor Green
                 $action = Read-Host "Choose action (1 or 2, or 0 to return)"
@@ -358,8 +333,8 @@ do {
                 } else {
                     Write-Host "Invalid action." -ForegroundColor Red
                 }
-            } else {
-                Write-Host "No valid selection made. Exiting Startup Manager." -ForegroundColor Red
+            } catch {
+                Write-Host "Failed to retrieve public IP information: $_" -ForegroundColor Red
             }
             Pause-For-User
         }
@@ -417,14 +392,14 @@ do {
             Write-Host "2. Uninstall (remove completely)" -ForegroundColor Red
             $actionChoice = Read-Host "Enter 1 or 2 (or 0 to return)"
             if ($actionChoice -eq '0') { continue }
-            function Reinstall-App($packageName, $displayName) {
+            function Restore-App($packageName, $displayName) {
                 $pkg = Get-AppxPackage -AllUsers | Where-Object { $_.Name -eq $packageName }
                 if ($pkg) {
                     try {
                         Add-AppxPackage -DisableDevelopmentMode -Register (Join-Path $pkg.InstallLocation 'AppXManifest.xml')
-                        Write-Host "$displayName reinstalled successfully." -ForegroundColor Green
+                        Write-Host "$displayName restored successfully." -ForegroundColor Green
                     } catch {
-                        Write-Host "Failed to reinstall $displayName." -ForegroundColor Red
+                        Write-Host "Failed to restore $displayName." -ForegroundColor Red
                     }
                 } else {
                     Write-Host "$displayName not found on the system." -ForegroundColor Yellow
@@ -468,7 +443,7 @@ do {
             if ($appChoice -eq ($apps.Count+1).ToString()) {
                 foreach ($app in $apps) {
                     if ($actionChoice -eq '1') {
-                        Reinstall-App $app.name $app.display
+                        Restore-App $app.name $app.display
                     } elseif ($actionChoice -eq '2') {
                         Uninstall-App $app.name $app.display
                     }
@@ -476,7 +451,7 @@ do {
             } elseif (($appChoice -as [int]) -ge 1 -and ($appChoice -as [int]) -le $apps.Count) {
                 $selected = $apps[($appChoice -as [int])-1]
                 if ($actionChoice -eq '1') {
-                    Reinstall-App $selected.name $selected.display
+                    Restore-App $selected.name $selected.display
                 } elseif ($actionChoice -eq '2') {
                     Uninstall-App $selected.name $selected.display
                 }
@@ -484,26 +459,6 @@ do {
                 Write-Host "Invalid choice." -ForegroundColor Yellow
             }
             Pause-For-User
-        }
-            Write-Host "Choose action:" -ForegroundColor Cyan
-            Write-Host "1. Disable Windows Defender"
-            Write-Host "2. Enable Windows Defender"
-            $defenderChoice = Read-Host "Enter action number"
-                $toolUrl = "https://github.com/5t42/DeBloater/raw/refs/heads/main/Source/WDefender%20D%20&%20E.exe"
-                $toolPath = Join-Path $env:USERPROFILE "Downloads\WDefender D & E.exe"
-                Write-Host "Downloading Defender control tool..." -ForegroundColor Cyan
-                try {
-                    Invoke-WebRequest -Uri $toolUrl -OutFile $toolPath -UseBasicParsing -ErrorAction Stop
-                    Write-Host "Tool downloaded successfully." -ForegroundColor Green
-                    Write-Host "Launching tool..." -ForegroundColor Cyan
-                    Start-Process -FilePath $toolPath -Wait
-                    Write-Host "Tool closed. Deleting..." -ForegroundColor Yellow
-                    Remove-Item $toolPath -Force -ErrorAction SilentlyContinue
-                    Write-Host "Tool deleted from Downloads." -ForegroundColor Green
-                } catch {
-                    Write-Host "Error downloading or running the tool: $_" -ForegroundColor Red
-                }
-                Pause-For-User
         }
     }
 } while ($choice -ne '2')
