@@ -1,3 +1,9 @@
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "ERROR: This script must be run as Administrator!" -ForegroundColor Red
+    Pause-For-User "Press Enter to exit..."
+    exit
+}
 $ProgressPreference = 'SilentlyContinue'
 Clear-Host
 
@@ -337,6 +343,15 @@ do {
         }
         '9' {
             $apps = @(
+                try {
+                    $tamperStatus = Get-MpComputerStatus | Select-Object -ExpandProperty IsTamperProtected
+                } catch {
+                    $tamperStatus = $null
+                }
+                if ($tamperStatus -eq $true) {
+                    Write-Host "WARNING: Tamper Protection is enabled! You must disable it from Windows Security settings before you can disable Defender via registry." -ForegroundColor Red
+                    Pause-For-User
+                }
                 @{num=1; name='Microsoft.WindowsCalculator'; display='Calculator'},
                 @{num=2; name='Microsoft.Windows.Photos'; display='Photos'},
                 @{num=3; name='microsoft.windowscommunicationsapps'; display='Mail & Calendar'},
